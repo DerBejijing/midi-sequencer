@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <pico/stdlib.h>
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
@@ -23,5 +24,5 @@
 #define MAIN_MUX_READ 28
 
 int main() {
-    
+
 }
