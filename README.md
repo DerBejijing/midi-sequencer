@@ -1,2 +1,2 @@
 # sequencer-32
-32 step midi sequencer firmware for raspberry pico
+midi sequencer firmware for raspberry pico (moog 960-sequencer inspired)
