@@ -28,13 +28,9 @@ void seq_gpio_tick_values(void);
 void seq_gpio_tick_buttons(void);
 void seq_gpio_tick_settings(void);
 
-// type of button matters!
-// -> momentary push buttons will trigger twice
-// -> switches will trigger upon changing their state
-// TODO:
-// -> give chance to influence that behaviour
-// -> make the interface row accessible
-void seq_gpio_callback_buttons_toggle(uint8_t button, void (*callback)());
+void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t momentary, void (*callback)());
+void seq_gpio_process_callback(uint8_t is_interface, uint8_t button);
 void seq_gpio_callback_buttons_void(void);
+
 
 #endif

@@ -12,7 +12,6 @@ int main() {
     stdio_init_all();
     seq_gpio_init();
 
-
     while(1) seq_gpio_tick();
 
     return 0;
