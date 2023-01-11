@@ -45,6 +45,7 @@ struct analog_reading {
 
 struct analog_reading sg_values_stages[SEQ_ROWS * SEQ_STAGES];
 struct analog_reading sg_values_settings[SETTINGS_BUTTONS];
+struct analog_reading sg_values_interface[SEQ_STAGES];
 
 uint8_t sg_matrix_cycles = 1;
 uint8_t sg_debounce_cycles = 10;                                                            // change back
@@ -91,6 +92,8 @@ void seq_gpio_init(void) {
 
 
 void seq_gpio_tick(void) {
+    /* read values */
+    seq_gpio_tick_values();
 
 }
 
@@ -137,9 +140,9 @@ void seq_gpio_matrix_set(uint8_t row, uint8_t stage) {
 
 
 // "private"
-uint8_t seq_gpio_debounce(uint8_t value_new, struct analog_reading* debounce_struct) {
-    if(debounce_struct->value != value_new) {
-        if(debounce_struct->value_new == value_new) {
+uint8_t seq_gpio_debounce(uint8_t read, struct analog_reading* debounce_struct) {
+    if(debounce_struct->value != read) {
+        if(debounce_struct->value_new == read) {
             ++debounce_struct->certainty;
         
             if(debounce_struct->certainty == ANALOG_CERTAINTY_TARGET) {
@@ -148,7 +151,7 @@ uint8_t seq_gpio_debounce(uint8_t value_new, struct analog_reading* debounce_str
             }
 
         } else {
-            debounce_struct->value_new = value_new;
+            debounce_struct->value_new = read;
             debounce_struct->certainty = 0;
         }
     } else debounce_struct->certainty = 0;
@@ -175,10 +178,74 @@ uint8_t seq_gpio_read_button(uint8_t pin) {
 }
 
 
+uint8_t seq_gpio_read_setting(uint8_t pin) {
+    gpio_put(MAIN_MUX_CH_A, ADDR_SETTINGS >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_SETTINGS >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_SETTINGS >> 2 & 1);
 
-uint8_t seq_gpio_read_setting(uint8_t pin);
-uint8_t seq_gpio_read_interface(uint8_t pin);
-uint8_t seq_gpio_read_value(uint8_t row, uint8_t stage);
-uint8_t seq_gpio_read_certainty(void); 
+    gpio_put(MUX_CH_A, pin >> 0 & 1);
+    gpio_put(MUX_CH_B, pin >> 1 & 1);
+    gpio_put(MUX_CH_C, pin >> 2 & 1);
+
+    return seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_settings[pin]);
+}
+
+
+uint8_t seq_gpio_read_interface(uint8_t pin) {
+    gpio_put(MAIN_MUX_CH_A, ADDR_ROW_3 >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_ROW_3 >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_ROW_3 >> 2 & 1);
+
+    gpio_put(MUX_CH_A, pin >> 0 & 1);
+    gpio_put(MUX_CH_B, pin >> 1 & 1);
+    gpio_put(MUX_CH_C, pin >> 2 & 1);
+
+    return seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[pin]);
+}
+
+
+uint8_t seq_gpio_read_value(uint8_t row, uint8_t stage) {
+    return sg_values_stages[row * SEQ_STAGES + stage].value;
+}
+
+
+void seq_gpio_tick_values(void) {
+    gpio_put(MAIN_MUX_CH_A, ADDR_ROW_0 >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_ROW_0 >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_ROW_0 >> 2 & 1);
+
+    for(uint8_t i = 0; i < SEQ_STAGES; ++i) {
+        gpio_put(MUX_CH_A, i >> 0 & 1);
+        gpio_put(MUX_CH_B, i >> 1 & 1);
+        gpio_put(MUX_CH_C, i >> 2 & 1);
+
+        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[0 * SEQ_STAGES + i]);
+    }
+
+    gpio_put(MAIN_MUX_CH_A, ADDR_ROW_1 >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_ROW_1 >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_ROW_1 >> 2 & 1);
+
+    for(uint8_t i = 0; i < SEQ_STAGES; ++i) {
+        gpio_put(MUX_CH_A, i >> 0 & 1);
+        gpio_put(MUX_CH_B, i >> 1 & 1);
+        gpio_put(MUX_CH_C, i >> 2 & 1);
+
+        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[1 * SEQ_STAGES + i]);
+    }
+
+    gpio_put(MAIN_MUX_CH_A, ADDR_ROW_2 >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_ROW_2 >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_ROW_2 >> 2 & 1);
+
+    for(uint8_t i = 0; i < SEQ_STAGES; ++i) {
+        gpio_put(MUX_CH_A, i >> 0 & 1);
+        gpio_put(MUX_CH_B, i >> 1 & 1);
+        gpio_put(MUX_CH_C, i >> 2 & 1);
+
+        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[2 * SEQ_STAGES + i]);
+    }
+}
+
 
 #endif
