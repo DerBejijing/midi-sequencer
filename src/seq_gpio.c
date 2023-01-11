@@ -1,6 +1,3 @@
-#ifndef SEQ_GPIO_H
-#define SEQ_QPIO_H
-
 #include "../include/seq_gpio.h"
 #include <stdio.h>
 
@@ -312,5 +309,3 @@ void seq_gpio_callback_toggle(uint8_t button, void (*callback)()) {
 void seq_gpio_callback_void(void) {
     return;
 }
-
-#endif
