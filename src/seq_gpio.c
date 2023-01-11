@@ -61,7 +61,6 @@ uint64_t sg_buttons_read_last = 0;
 uint64_t sg_settings_read_last = 0;
 uint64_t sg_values_read_last = 0;
 
-void (*sg_button_callbacks_state[SETTINGS_BUTTONS])() = {seq_gpio_callback_void};
 void (*sg_button_callbacks_toggle[SETTINGS_BUTTONS])() = {seq_gpio_callback_void};
 
 
@@ -280,7 +279,11 @@ void seq_gpio_tick_buttons(void) {
             readings_sum += adc_read() * ADC_CONV_24;
         }
 
-        sg_values_buttons[i] = readings_sum / sg_debounce_cycles > (ADC_CONV_24 * ADC_RANGE / 2);
+        uint8_t value_new = readings_sum / sg_debounce_cycles > (ADC_CONV_24 * ADC_RANGE / 2);
+
+        if(sg_values_buttons[i] != value_new) sg_button_callbacks_toggle[i]();
+
+        sg_values_buttons[i] = value_new;
     }
 
 }
@@ -300,5 +303,14 @@ void seq_gpio_tick_settings(void) {
     }
 }
 
+
+void seq_gpio_callback_toggle(uint8_t button, void (*callback)()) {
+    sg_button_callbacks_toggle[button] = callback;
+}
+
+
+void seq_gpio_callback_void(void) {
+    return;
+}
 
 #endif

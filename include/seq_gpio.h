@@ -28,7 +28,6 @@ void seq_gpio_tick_values(void);
 void seq_gpio_tick_buttons(void);
 void seq_gpio_tick_settings(void);
 
-void seq_gpio_callback_state(uint8_t button, void (*callback)());
 void seq_gpio_callback_toggle(uint8_t button, void (*callback)());
 void seq_gpio_callback_void(void);
 
