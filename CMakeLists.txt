@@ -19,7 +19,10 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(midi-sequencer src/main.c )
+add_executable(midi-sequencer
+        src/main.c
+        src/seq_gpio.c
+        )
 
 pico_set_program_name(midi-sequencer "midi-sequencer")
 pico_set_program_version(midi-sequencer "0.1")

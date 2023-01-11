@@ -1,8 +1,9 @@
-#ifndef SEVEN_SEGMENT_H
-#define SEVEN_SEGMENT_H
+#ifndef SEQ_SEVEN_SEGMENT_H
+#define SEQ_SEVEN_SEGMENT_H
 
-#include <stdio.h>
 #include <pico/stdlib.h>
+
+#include "seq_globals.h"
 
 void seven_segment_init(void);
 void seven_segment_tick(void);

@@ -1,10 +1,9 @@
 #ifndef SEQ_GPIO_H
 #define SEQ_QPIO_H
 
-#include <stdio.h>
-#include <pico/stdlib.h>
+#include "../include/seq_gpio.h"
 
-#define INDEX_REVERSE(i) SEQ_STAGES - i
+#define INDEX_REVERSE(i) SEQ_STAGES - 1 - i
 
 #define ADC_RANGE (1 << 12)
 #define ADC_CONV_24 (24.0 / (ADC_RANGE - 1))
@@ -29,28 +28,10 @@
 #define SETTINGS_VALUES 7
 
 
-void seq_gpio_init(void);
-void seq_gpio_tick(void);
+uint8_t sg_matrix_cycles = 1;
+uint8_t sg_debounce_cycles = 1;
 
-void seq_gpio_matrix_tick(void);
-void seq_gpio_matrix_clear(void);
-void seq_gpio_matrix_cycles(uint8_t cycles);
-void seq_gpio_matrix_set(uint8_t row, uint8_t stage);
-
-void seq_gpio_debounce_cycles(uint8_t cycles);
-
-uint8_t seq_gpio_read_button(uint8_t pin);
-uint8_t seq_gpio_read_setting(uint8_t pin);
-uint8_t seq_gpio_read_interface(uint8_t pin);
-uint8_t seq_gpio_read_value(uint8_t row, uint8_t stage);
-
-void seq_gpio_callback_state(uint8_t button, void (*callback)());
-void seq_gpio_callback_toggle(uint8_t button, void (*callback)());
-void seq_gpio_callback_void(void);
-
-
-uint8_t sg_matrix_cycles;
-uint8_t sg_debounce_cycles;
+uint8_t sg_matrix[SEQ_ROWS] = {0};
 
 void (*sg_button_callbacks_state[SETTINGS_BUTTONS])() = {seq_gpio_callback_void};
 void (*sg_button_callbacks_toggle[SETTINGS_BUTTONS])() = {seq_gpio_callback_void};
@@ -103,17 +84,33 @@ void seq_gpio_matrix_tick(void) {
             gpio_put(MATRIX_GND_1, row != 1);
             gpio_put(MATRIX_GND_2, row != 2);
 
-            for(uint8_t i = 0; i < SEQ_STAGES; ++i) {
+            if(sg_matrix[row] != STAGE_NONE) {
+                uint8_t stage = INDEX_REVERSE(sg_matrix[row]);
+
+                gpio_put(MUX_CH_A, stage >> 0 & 1);
+                gpio_put(MUX_CH_B, stage >> 1 & 1);
+                gpio_put(MUX_CH_C, stage >> 2 & 1);
+
+                gpio_put(MATRIX_PWR, 1);
+
+                sleep_ms(2);
+
                 gpio_put(MATRIX_PWR, 0);
-
-                gpio_put(MUX_CH_A, i >> 0 & 1);
-                gpio_put(MUX_CH_B, i >> 1 & 1);
-                gpio_put(MUX_CH_C, i >> 2 & 1);
-
-                if(0) gpio_put(MATRIX_PWR, 1);
             }
         }
     }
 }
+
+
+void seq_gpio_matrix_clear(void) {
+    for(uint8_t i = 0; i < SEQ_ROWS; ++i) sg_matrix[i] = STAGE_NONE;
+}
+
+
+void seq_gpio_matrix_set(uint8_t row, uint8_t stage) {
+    if(row < 0 || row > SEQ_ROWS) return;
+    sg_matrix[row] = stage;
+}
+
 
 #endif
