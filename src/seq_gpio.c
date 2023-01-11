@@ -45,12 +45,21 @@ struct analog_reading {
 
 struct analog_reading sg_values_stages[SEQ_ROWS * SEQ_STAGES];
 struct analog_reading sg_values_settings[SETTINGS_BUTTONS];
-struct analog_reading sg_values_interface[SEQ_STAGES];
+
+uint8_t sg_values_interface[SEQ_STAGES];
+uint8_t sg_values_buttons[SETTINGS_BUTTONS];
+uint8_t sg_matrix[SEQ_ROWS] = {0};
 
 uint8_t sg_matrix_cycles = 1;
-uint8_t sg_debounce_cycles = 10;                                                            // change back
+uint8_t sg_debounce_cycles = 1;
 
-uint8_t sg_matrix[SEQ_ROWS] = {0};
+uint64_t sg_buttons_read_delay = 1000;
+uint64_t sg_settings_read_delay = 2000;
+uint64_t sg_values_read_delay = 1000;
+
+uint64_t sg_buttons_read_last = 0;
+uint64_t sg_settings_read_last = 0;
+uint64_t sg_values_read_last = 0;
 
 void (*sg_button_callbacks_state[SETTINGS_BUTTONS])() = {seq_gpio_callback_void};
 void (*sg_button_callbacks_toggle[SETTINGS_BUTTONS])() = {seq_gpio_callback_void};
@@ -92,9 +101,20 @@ void seq_gpio_init(void) {
 
 
 void seq_gpio_tick(void) {
-    /* read values */
-    seq_gpio_tick_values();
+    uint64_t current_time = time_us_64();
 
+    if(current_time > sg_buttons_read_last + sg_buttons_read_delay) {
+        sg_buttons_read_last = current_time;
+        seq_gpio_tick_buttons();
+    }
+    if(current_time > sg_settings_read_last + sg_settings_read_delay) {
+        sg_settings_read_last = current_time;
+        seq_gpio_tick_settings();
+    }
+    if(current_time > sg_values_read_last + sg_values_read_delay) {
+        sg_values_read_last = current_time;
+        seq_gpio_tick_values();
+    }
 }
 
 
@@ -139,6 +159,11 @@ void seq_gpio_matrix_set(uint8_t row, uint8_t stage) {
 }
 
 
+void seq_gpio_debounce_cycles(uint8_t cycles) {
+    sg_debounce_cycles = cycles;
+}
+
+
 // "private"
 uint8_t seq_gpio_debounce(uint8_t read, struct analog_reading* debounce_struct) {
     if(debounce_struct->value != read) {
@@ -159,48 +184,19 @@ uint8_t seq_gpio_debounce(uint8_t read, struct analog_reading* debounce_struct) 
     return debounce_struct->value;
 }
 
+
 uint8_t seq_gpio_read_button(uint8_t pin) {
-    gpio_put(MAIN_MUX_CH_A, ADDR_BUTTONS >> 0 & 1);
-    gpio_put(MAIN_MUX_CH_B, ADDR_BUTTONS >> 1 & 1);
-    gpio_put(MAIN_MUX_CH_C, ADDR_BUTTONS >> 2 & 1);
-
-    gpio_put(MUX_CH_A, pin >> 0 & 1);
-    gpio_put(MUX_CH_B, pin >> 1 & 1);
-    gpio_put(MUX_CH_C, pin >> 2 & 1);
-
-    uint16_t readings_sum = 0;
-
-    for(uint8_t cycle = 0; cycle < sg_debounce_cycles; ++cycle) {
-        readings_sum += adc_read() * ADC_CONV_24;
-    }
-
-    return readings_sum / sg_debounce_cycles > (ADC_CONV_24 * ADC_RANGE / 2);
+    return sg_values_buttons[pin];
 }
 
 
 uint8_t seq_gpio_read_setting(uint8_t pin) {
-    gpio_put(MAIN_MUX_CH_A, ADDR_SETTINGS >> 0 & 1);
-    gpio_put(MAIN_MUX_CH_B, ADDR_SETTINGS >> 1 & 1);
-    gpio_put(MAIN_MUX_CH_C, ADDR_SETTINGS >> 2 & 1);
-
-    gpio_put(MUX_CH_A, pin >> 0 & 1);
-    gpio_put(MUX_CH_B, pin >> 1 & 1);
-    gpio_put(MUX_CH_C, pin >> 2 & 1);
-
-    return seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_settings[pin]);
+    return sg_values_settings[pin].value;
 }
 
 
 uint8_t seq_gpio_read_interface(uint8_t pin) {
-    gpio_put(MAIN_MUX_CH_A, ADDR_ROW_3 >> 0 & 1);
-    gpio_put(MAIN_MUX_CH_B, ADDR_ROW_3 >> 1 & 1);
-    gpio_put(MAIN_MUX_CH_C, ADDR_ROW_3 >> 2 & 1);
-
-    gpio_put(MUX_CH_A, pin >> 0 & 1);
-    gpio_put(MUX_CH_B, pin >> 1 & 1);
-    gpio_put(MUX_CH_C, pin >> 2 & 1);
-
-    return seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[pin]);
+    return sg_values_interface[pin];
 }
 
 
@@ -219,7 +215,7 @@ void seq_gpio_tick_values(void) {
         gpio_put(MUX_CH_B, i >> 1 & 1);
         gpio_put(MUX_CH_C, i >> 2 & 1);
 
-        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[0 * SEQ_STAGES + i]);
+        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[0 * SEQ_STAGES + INDEX_REVERSE(i)]);
     }
 
     gpio_put(MAIN_MUX_CH_A, ADDR_ROW_1 >> 0 & 1);
@@ -231,7 +227,7 @@ void seq_gpio_tick_values(void) {
         gpio_put(MUX_CH_B, i >> 1 & 1);
         gpio_put(MUX_CH_C, i >> 2 & 1);
 
-        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[1 * SEQ_STAGES + i]);
+        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[1 * SEQ_STAGES + INDEX_REVERSE(i)]);
     }
 
     gpio_put(MAIN_MUX_CH_A, ADDR_ROW_2 >> 0 & 1);
@@ -243,7 +239,64 @@ void seq_gpio_tick_values(void) {
         gpio_put(MUX_CH_B, i >> 1 & 1);
         gpio_put(MUX_CH_C, i >> 2 & 1);
 
+        // No, this is the only row I did not mess up when wiring ._.
+        // So no reverse here
         seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[2 * SEQ_STAGES + i]);
+    }
+}
+
+
+void seq_gpio_tick_buttons(void) {
+    gpio_put(MAIN_MUX_CH_A, ADDR_ROW_3 >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_ROW_3 >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_ROW_3 >> 2 & 1);
+
+    for(uint8_t i = 0; i < SEQ_STAGES; ++i) {
+        gpio_put(MUX_CH_A, i >> 0 & 1);
+        gpio_put(MUX_CH_B, i >> 1 & 1);
+        gpio_put(MUX_CH_C, i >> 2 & 1);
+
+        uint16_t readings_sum = 0;
+
+        for(uint8_t cycle = 0; cycle < sg_debounce_cycles; ++cycle) {
+            readings_sum += adc_read() * ADC_CONV_24;
+        }
+
+        sg_values_interface[i] = readings_sum / sg_debounce_cycles > (ADC_CONV_24 * ADC_RANGE / 2);
+    }
+
+    gpio_put(MAIN_MUX_CH_A, ADDR_BUTTONS >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_BUTTONS >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_BUTTONS >> 2 & 1);
+
+    for(uint8_t i = 0; i < SETTINGS_BUTTONS; ++i) {
+        gpio_put(MUX_CH_A, i >> 0 & 1);
+        gpio_put(MUX_CH_B, i >> 1 & 1);
+        gpio_put(MUX_CH_C, i >> 2 & 1);
+
+        uint16_t readings_sum = 0;
+
+        for(uint8_t cycle = 0; cycle < sg_debounce_cycles; ++cycle) {
+            readings_sum += adc_read() * ADC_CONV_24;
+        }
+
+        sg_values_buttons[i] = readings_sum / sg_debounce_cycles > (ADC_CONV_24 * ADC_RANGE / 2);
+    }
+
+}
+
+
+void seq_gpio_tick_settings(void) {
+    gpio_put(MAIN_MUX_CH_A, ADDR_SETTINGS >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_SETTINGS >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_SETTINGS >> 2 & 1);
+
+    for(uint8_t i = 0; i < SETTINGS_VALUES; ++i) {
+        gpio_put(MUX_CH_A, i >> 0 & 1);
+        gpio_put(MUX_CH_B, i >> 1 & 1);
+        gpio_put(MUX_CH_C, i >> 2 & 1);
+
+        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_settings[i]);
     }
 }
 

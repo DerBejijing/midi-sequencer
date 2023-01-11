@@ -16,12 +16,6 @@ int main() {
 
     while(1) {
         seq_gpio_tick();
-        
-        for(uint8_t r = 0; r < SEQ_ROWS; ++r) {
-            for(uint8_t i = 0; i < SEQ_STAGES; ++i) printf("%d ", seq_gpio_read_value(r, i));
-            printf("\n");
-        }
-        printf("----------------------------------------\n");
     }
 
     return 0;

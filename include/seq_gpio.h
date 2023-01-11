@@ -23,7 +23,10 @@ uint8_t seq_gpio_read_button(uint8_t pin);
 uint8_t seq_gpio_read_setting(uint8_t pin);
 uint8_t seq_gpio_read_interface(uint8_t pin);
 uint8_t seq_gpio_read_value(uint8_t row, uint8_t stage);
+
 void seq_gpio_tick_values(void);
+void seq_gpio_tick_buttons(void);
+void seq_gpio_tick_settings(void);
 
 void seq_gpio_callback_state(uint8_t button, void (*callback)());
 void seq_gpio_callback_toggle(uint8_t button, void (*callback)());
