@@ -4,6 +4,8 @@
 #define SEQ_STAGES 8
 #define SEQ_ROWS 3
 
+#define ANALOG_CERTAINTY_TARGET 10
+
 #define STAGE_NONE SEQ_STAGES + 1
 
 #endif

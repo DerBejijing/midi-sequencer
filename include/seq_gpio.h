@@ -23,6 +23,8 @@ uint8_t seq_gpio_read_button(uint8_t pin);
 uint8_t seq_gpio_read_setting(uint8_t pin);
 uint8_t seq_gpio_read_interface(uint8_t pin);
 uint8_t seq_gpio_read_value(uint8_t row, uint8_t stage);
+uint8_t seq_gpio_read_certainty(void);                                  // how accurate the last recorded value was compared
+                                                                        // to the ones recorded previously
 
 void seq_gpio_callback_state(uint8_t button, void (*callback)());
 void seq_gpio_callback_toggle(uint8_t button, void (*callback)());
