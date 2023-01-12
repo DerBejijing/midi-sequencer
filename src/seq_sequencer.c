@@ -11,7 +11,7 @@ uint8_t seq_running = 0;
 uint64_t seq_join_last_clock = 0;                   // last clock for joined sequence
 uint64_t seq_join_last_ratchet = 0;                 // last ratchet for joined sequence
 
-uint64_t seq_us_per_beat = 1000000;                 // speed of the sequence(s)
+uint64_t seq_us_per_beat = 500000;                 // speed of the sequence(s)
 
 uint8_t seq_values[SEQ_STAGES * SEQ_ROWS];
 uint8_t seq_durations[SEQ_STAGES * SEQ_ROWS];
@@ -43,7 +43,16 @@ struct midi_event event_stack[SEQ_ROWS];
 
 
 void sequencer_init(void) {
-
+    for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+        seq_rows[row].id = row;
+        seq_rows[row].type = 0;
+        seq_rows[row].stage = 0;
+        seq_rows[row].stages = SEQ_STAGES;
+        seq_rows[row].active = 1;
+        seq_rows[row].render = 1;
+        seq_rows[row].last_clock = 0;
+        seq_rows[row].last_ratchet = 0;
+    }
 }
 
 
@@ -57,16 +66,16 @@ void sequencer_tick(void) {
     }
 
     for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
-        if(current_time > seq_rows[row].last_clock + seq_us_per_beat) {
+        if(current_time >= seq_rows[row].last_clock + seq_us_per_beat) {
             struct seq_row* current_row = &seq_rows[row];
 
+            current_row->last_clock = current_time;
+
             if(current_row->active) {
-                current_row->last_clock = current_time;
                 ++current_row->stage;
 
-                if(current_row->stage > current_row->stages) {
+                if(current_row->stage >= current_row->stages) {
                     current_row->stage = 0;
-                    printf("reset\n");
                 }
 
                 if(seq_terminate) if(current_row->stage == 0) {

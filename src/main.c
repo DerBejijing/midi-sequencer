@@ -12,6 +12,7 @@
 int main() {
     stdio_init_all();
     seq_gpio_init();
+    sequencer_init();
 
     seq_gpio_register_callback(0, 0, 1, sequencer_toggle_running);
 
@@ -19,7 +20,7 @@ int main() {
 
     while(1) {
         seq_gpio_tick();
-        //sequencer_tick();
+        sequencer_tick();
     }
 
     return 0;
