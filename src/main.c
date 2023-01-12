@@ -32,6 +32,9 @@ int main() {
 
             for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
                 for(uint8_t stage = 0; stage < SEQ_STAGES; ++stage) sequencer_set_value(row * SEQ_STAGES + stage, seq_gpio_read_value(row, stage));
+
+                //printf("%d: %d\n", row, seq_gpio_read_setting(row));
+                sequencer_set_stages(row, seq_gpio_read_setting(row));
             }
         }
     }

@@ -5,6 +5,7 @@
 
 #define ADC_RANGE (1 << 12)
 #define ADC_CONV_24 (24.0 / (ADC_RANGE - 1))
+#define ADC_CONV_8 (8.0 / (ADC_RANGE - 1))
 
 #define MATRIX_GND_0 18
 #define MATRIX_GND_1 19
@@ -322,7 +323,8 @@ void seq_gpio_tick_settings(void) {
         gpio_put(MUX_CH_B, i >> 1 & 1);
         gpio_put(MUX_CH_C, i >> 2 & 1);
 
-        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_settings[i]);
+        if(i < SEQ_ROWS) seq_gpio_debounce(adc_read() * ADC_CONV_8, &sg_values_settings[i]);
+        else seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_settings[i]);
     }
 }
 
