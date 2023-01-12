@@ -105,6 +105,11 @@ void sequencer_tick(void) {
 }
 
 
+void sequencer_set_bpm(uint16_t bpm) {
+    seq_us_per_beat = 1000000 * (60.0f / bpm);
+}
+
+
 void sequencer_set_stages(uint8_t row_id, uint8_t stages) {
     seq_rows[row_id].stages = stages;
     if(seq_rows[row_id].stage >= stages) seq_rows[row_id].stage = 0;
