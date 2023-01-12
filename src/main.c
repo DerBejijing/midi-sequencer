@@ -19,6 +19,7 @@ int main() {
 
     sleep_ms(3000);
 
+
     uint64_t last_refresh = 0;
     uint16_t bpm_choices[25] = {0};
     for(uint8_t i = 0; i < 25; ++i) bpm_choices[i] = 60 + 20 * i;
@@ -29,6 +30,7 @@ int main() {
 
         seq_gpio_tick();
         sequencer_tick();
+
 
         if(current_time > last_refresh + VALUES_REFRESH_US) {
             last_refresh = current_time;

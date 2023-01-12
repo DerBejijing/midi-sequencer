@@ -71,7 +71,7 @@ void sequencer_tick(void) {
         return;
     }
 
-    for(uint8_t row = 0; row < 1; ++row) {
+    for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
         if(current_time >= seq_rows[row].last_clock + seq_us_per_beat) {
             struct seq_row* current_row = &seq_rows[row];
 
