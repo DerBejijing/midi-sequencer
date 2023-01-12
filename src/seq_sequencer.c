@@ -104,12 +104,23 @@ void sequencer_tick(void) {
 }
 
 
+// "private"
+void sequencer_process_initial(void) {
+    if(seq_join) return;
+
+    for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+        if(seq_rows[row].active) {
+            printf("row [%d] stage [%d], start now: %d\n", row, seq_rows[row].stage, seq_values[row * SEQ_STAGES + seq_rows[row].stage]);
+        }
+    }
+}
+
+
 void sequencer_toggle_running(void) {
     seq_running =! seq_running;
     if(seq_running) {
         sequencer_init();
-        
-        // process first stage(s)!
+        sequencer_process_initial();
     }
 }
 
