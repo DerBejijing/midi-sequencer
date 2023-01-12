@@ -15,6 +15,7 @@ int main() {
     sequencer_init();
 
     seq_gpio_register_callback(0, 0, 1, sequencer_toggle_running);
+    seq_gpio_register_callback(0, 1, 1, sequencer_terminate);
 
     sleep_ms(3000);
 

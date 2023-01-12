@@ -43,6 +43,12 @@ struct midi_event event_stack[SEQ_ROWS];
 
 
 void sequencer_init(void) {
+    uint64_t current_time = time_us_64();
+
+    seq_terminate = 0;
+    seq_join_step = 0;
+    seq_join_last_clock = 0;
+
     for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
         seq_rows[row].id = row;
         seq_rows[row].type = 0;
@@ -50,8 +56,8 @@ void sequencer_init(void) {
         seq_rows[row].stages = SEQ_STAGES;
         seq_rows[row].active = 1;
         seq_rows[row].render = 1;
-        seq_rows[row].last_clock = 0;
-        seq_rows[row].last_ratchet = 0;
+        seq_rows[row].last_clock = current_time;
+        seq_rows[row].last_ratchet = current_time;
     }
 }
 
@@ -89,20 +95,25 @@ void sequencer_tick(void) {
             }
         }
     }
+
+    if(seq_terminate) {
+        uint8_t run = 0;
+        for(uint8_t row = 0; row < SEQ_ROWS; ++row) run += seq_rows[row].active;
+        if(run == 0) sequencer_toggle_running();
+    }
 }
 
 
 void sequencer_toggle_running(void) {
     seq_running =! seq_running;
-    printf("running: %d\n", seq_running);
-    //if(seq_running) sequencer_init();
+    if(seq_running) {
+        sequencer_init();
+        
+        // process first stage(s)!
+    }
 }
 
 
-/*
-notes
-
-on every clock, the sequencer plays the next note
--> when starting the first note will be skipped!
--> play first note on activation of the sequencer!!!
-*/
+void sequencer_terminate(void) {
+    seq_terminate = 1;
+}
