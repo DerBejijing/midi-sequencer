@@ -30,7 +30,7 @@ void seq_gpio_tick_settings(void);
 
 void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t momentary, void (*callback)());
 void seq_gpio_process_callback(uint8_t is_interface, uint8_t button);
-void seq_gpio_callback_buttons_void(void);
+void seq_gpio_callback_void(void);
 
 
 #endif

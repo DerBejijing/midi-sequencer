@@ -1,15 +1,18 @@
 #ifndef SEQ_SEQUENCER_H
 #define SEQ_SEQUENCER_H
 
+#include <stdio.h>
 #include <pico/stdlib.h>
+
+#include "hardware/timer.h"
 
 #include "seq_globals.h"
 
 void sequencer_init(void);
 void sequencer_tick(void);
+
 void sequencer_set_bpm(uint16_t bpm);
 void sequencer_set_stages(uint8_t row_id, uint8_t stages);
-
 void sequencer_set_value(uint8_t index, uint8_t value);
 void sequencer_set_duration(uint8_t index, uint8_t value);
 void sequencer_set_ratchets(uint8_t index, uint8_t value);

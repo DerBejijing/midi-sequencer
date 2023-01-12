@@ -51,7 +51,7 @@ struct callback {
 struct analog_reading sg_values_stages[SEQ_ROWS * SEQ_STAGES];
 struct analog_reading sg_values_settings[SETTINGS_BUTTONS];
 
-struct callback sg_button_callback[SEQ_ROWS + SETTINGS_BUTTONS];
+struct callback sg_button_callback[SEQ_STAGES + SETTINGS_BUTTONS];
 
 uint8_t sg_values_interface[SEQ_STAGES];
 uint8_t sg_values_buttons[SETTINGS_BUTTONS];
@@ -67,8 +67,6 @@ uint64_t sg_values_read_delay = 1000;
 uint64_t sg_buttons_read_last = 0;
 uint64_t sg_settings_read_last = 0;
 uint64_t sg_values_read_last = 0;
-
-//void (*sg_button_callbacks_toggle[SETTINGS_BUTTONS])() = {seq_gpio_callback_void};
 
 
 
@@ -103,6 +101,22 @@ void seq_gpio_init(void) {
     adc_init();
     adc_gpio_init(MAIN_MUX_READ);
     adc_select_input(2);
+
+    // initialize callback pointer
+    for(uint8_t i = 0; i < SEQ_STAGES + SETTINGS_BUTTONS; ++i) sg_button_callback[i].callback = seq_gpio_callback_void;
+    
+    // initialize values for switches
+    gpio_put(MAIN_MUX_CH_A, ADDR_ROW_3 >> 0 & 1);
+    gpio_put(MAIN_MUX_CH_B, ADDR_ROW_3 >> 1 & 1);
+    gpio_put(MAIN_MUX_CH_C, ADDR_ROW_3 >> 2 & 1);
+
+    for(uint8_t i = 0; i < SEQ_STAGES; ++i) {
+        gpio_put(MUX_CH_A, i >> 0 & 1);
+        gpio_put(MUX_CH_B, i >> 1 & 1);
+        gpio_put(MUX_CH_C, i >> 2 & 1);
+
+        sg_values_interface[i] = adc_read() > (ADC_CONV_24 * ADC_RANGE / 2);
+    }
 }
 
 
@@ -272,7 +286,7 @@ void seq_gpio_tick_buttons(void) {
         if(sg_values_interface[i] != value_new) seq_gpio_process_callback(1, i);
         sg_values_interface[i] = value_new;
     }
-
+    
     gpio_put(MAIN_MUX_CH_A, ADDR_BUTTONS >> 0 & 1);
     gpio_put(MAIN_MUX_CH_B, ADDR_BUTTONS >> 1 & 1);
     gpio_put(MAIN_MUX_CH_C, ADDR_BUTTONS >> 2 & 1);
@@ -292,7 +306,7 @@ void seq_gpio_tick_buttons(void) {
         if(sg_values_buttons[i] != value_new) seq_gpio_process_callback(0, i);
         sg_values_buttons[i] = value_new;
     }
-
+    
 }
 
 
@@ -323,7 +337,7 @@ void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t mo
 
 
 void seq_gpio_process_callback(uint8_t is_interface, uint8_t button) {
-    uint8_t index = is_interface * SEQ_ROWS + button;
+    uint8_t index = is_interface * SEQ_STAGES + button;
 
     sg_button_callback[index].state =! sg_button_callback[index].state;
 
@@ -331,10 +345,11 @@ void seq_gpio_process_callback(uint8_t is_interface, uint8_t button) {
         if(sg_button_callback[index].state) sg_button_callback[index].callback();
         return;
     }
-    sg_button_callback[index].callback();
+    sg_button_callback[index].callback();                                           // apparently called as soon as seq starts -> initialize buttons
 }
 
 
 void seq_gpio_callback_void(void) {
+    printf("void\n");
     return;
 }
