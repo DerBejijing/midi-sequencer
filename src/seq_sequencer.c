@@ -13,9 +13,9 @@ uint64_t seq_join_last_ratchet = 0;                 // last ratchet for joined s
 
 uint64_t seq_us_per_beat = 500000;                 // speed of the sequence(s)
 
-uint8_t seq_values[SEQ_STAGES * SEQ_ROWS];
-uint8_t seq_durations[SEQ_STAGES * SEQ_ROWS];
-uint8_t seq_ratchets[SEQ_STAGES * SEQ_ROWS];
+uint8_t seq_values[SEQ_STAGES * SEQ_ROWS] = {0};
+uint8_t seq_durations[SEQ_STAGES * SEQ_ROWS] = {1};
+uint8_t seq_ratchets[SEQ_STAGES * SEQ_ROWS] = {0};
 
 struct seq_row {
     uint8_t id;                 // aka row
@@ -64,12 +64,9 @@ void sequencer_init(void) {
 
 void sequencer_tick(void) {
     if(!seq_running) return;
+    if(seq_join) return;
 
     uint64_t current_time = time_us_64();
-
-    if(seq_join) {
-        return;
-    }
 
     for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
         if(current_time >= seq_rows[row].last_clock + seq_us_per_beat) {
@@ -88,6 +85,7 @@ void sequencer_tick(void) {
 
                 if(seq_terminate) if(current_row->stage == 0) {
                     current_row->active = 0;
+                    seq_gpio_matrix_set(row, STAGE_NONE);
                     return;
                 }
 
@@ -111,6 +109,10 @@ void sequencer_set_bpm(uint16_t bpm) {
 
 
 void sequencer_set_stages(uint8_t row_id, uint8_t stages) {
+
+    // when sequences terminate, their lengths may no longer be altered
+    if(seq_terminate) return;
+
     seq_rows[row_id].stages = stages;
     if(seq_rows[row_id].stage >= stages) seq_rows[row_id].stage = 0;
     
