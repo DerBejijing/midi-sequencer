@@ -135,6 +135,8 @@ void seq_gpio_tick(void) {
         sg_values_read_last = current_time;
         seq_gpio_tick_values();
     }
+
+    seq_gpio_matrix_tick();
 }
 
 
@@ -338,8 +340,6 @@ void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t mo
 
 void seq_gpio_process_callback(uint8_t is_interface, uint8_t button) {
     uint8_t index = is_interface * (SEQ_STAGES - 1) + button;
-
-    printf("callback if:%d b:%d index:%d\n", is_interface, button, index);
 
     sg_button_callback[index].state =! sg_button_callback[index].state;
 

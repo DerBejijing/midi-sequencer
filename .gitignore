@@ -1,2 +1,4 @@
 .DS_STORE
 build/**
+src/seq_ui.c
+include/seq_ui.h

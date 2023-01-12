@@ -7,6 +7,7 @@
 #include "hardware/timer.h"
 
 #include "seq_globals.h"
+#include "seq_gpio.h"
 
 void sequencer_init(void);
 void sequencer_tick(void);

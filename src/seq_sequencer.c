@@ -84,6 +84,8 @@ void sequencer_tick(void) {
                     current_row->stage = 0;
                 }
 
+                seq_gpio_matrix_set(row, current_row->stage);
+
                 if(seq_terminate) if(current_row->stage == 0) {
                     current_row->active = 0;
                     return;
@@ -101,6 +103,11 @@ void sequencer_tick(void) {
         for(uint8_t row = 0; row < SEQ_ROWS; ++row) run += seq_rows[row].active;
         if(run == 0) sequencer_toggle_running();
     }
+}
+
+
+void sequencer_set_value(uint8_t index, uint8_t value) {
+    seq_values[index] = value;
 }
 
 
