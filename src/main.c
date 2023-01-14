@@ -19,6 +19,8 @@ int main() {
     seq_gpio_register_callback(0, 0, 1, sequencer_toggle_running);
     seq_gpio_register_callback(0, 1, 1, sequencer_terminate);
 
+    seq_seven_segment_time(500000);
+
     sleep_ms(3000);
 
     seq_seven_segment_set(1337);
@@ -34,7 +36,6 @@ int main() {
 
         seq_gpio_tick();
         sequencer_tick();
-
 
         if(current_time > last_refresh_v + REFRESH_VALUES_US) {
             last_refresh_v = current_time;

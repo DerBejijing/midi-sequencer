@@ -8,6 +8,7 @@
 #include "hardware/timer.h"
 
 #include "seq_globals.h"
+#include "seq_seven_segment.h"
 
 void seq_gpio_init(void);
 void seq_gpio_tick(void);

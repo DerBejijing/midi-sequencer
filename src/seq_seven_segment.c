@@ -248,9 +248,9 @@ uint8_t num_digit(uint16_t number, uint8_t digit) {
 
 
 void seq_seven_segment_set(uint16_t data) {
-    ss_illumination_started = time_us_64();
+	seq_seven_segment_clear();
 
-    seq_seven_segment_clear();
+    ss_illumination_started = time_us_64();
 
     uint8_t length = num_length(data);
     uint8_t leading_zeroes = SEGMENTS_COUNT - length;
@@ -263,9 +263,9 @@ void seq_seven_segment_set(uint16_t data) {
 
 
 void seq_seven_segment_set_prefix(uint8_t prefix, uint16_t data) {
+	seq_seven_segment_clear();
+	
 	ss_illumination_started = time_us_64();
-
-    seq_seven_segment_clear();
 
     uint8_t length = num_length(data);
     uint8_t leading_zeroes = SEGMENTS_COUNT - length;

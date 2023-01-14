@@ -238,7 +238,9 @@ void seq_gpio_tick_values(void) {
         gpio_put(MUX_CH_B, i >> 1 & 1);
         gpio_put(MUX_CH_C, i >> 2 & 1);
 
-        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[0 * SEQ_STAGES + INDEX_REVERSE(i)]);
+        uint8_t old = sg_values_stages[0 * SEQ_STAGES + INDEX_REVERSE(i)].value;
+        uint8_t new = seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[0 * SEQ_STAGES + INDEX_REVERSE(i)]);
+        if(new != old) seq_seven_segment_set_prefix(1, new);
     }
 
     gpio_put(MAIN_MUX_CH_A, ADDR_ROW_1 >> 0 & 1);
@@ -250,7 +252,9 @@ void seq_gpio_tick_values(void) {
         gpio_put(MUX_CH_B, i >> 1 & 1);
         gpio_put(MUX_CH_C, i >> 2 & 1);
 
-        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[1 * SEQ_STAGES + INDEX_REVERSE(i)]);
+        uint8_t old = sg_values_stages[1 * SEQ_STAGES + INDEX_REVERSE(i)].value;
+        uint8_t new = seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[1 * SEQ_STAGES + INDEX_REVERSE(i)]);
+        if(new != old) seq_seven_segment_set_prefix(2, new);
     }
 
     gpio_put(MAIN_MUX_CH_A, ADDR_ROW_2 >> 0 & 1);
@@ -264,7 +268,9 @@ void seq_gpio_tick_values(void) {
 
         // No, this is the only row I did not mess up when wiring ._.
         // So no reverse here
-        seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[2 * SEQ_STAGES + i]);
+        uint8_t old = sg_values_stages[2 * SEQ_STAGES + i].value;
+        uint8_t new = seq_gpio_debounce(adc_read() * ADC_CONV_24, &sg_values_stages[2 * SEQ_STAGES + i]);
+        if(new != old) seq_seven_segment_set_prefix(3, new);
     }
 }
 
