@@ -7,11 +7,13 @@
 #include "../include/seq_globals.h"
 #include "../include/seq_gpio.h"
 #include "../include/seq_sequencer.h"
+#include "../include/seq_seven_segment.h"
 
 
 int main() {
     stdio_init_all();
     seq_gpio_init();
+    seq_seven_segment_init();
     sequencer_init();
 
     seq_gpio_register_callback(0, 0, 1, sequencer_toggle_running);
@@ -19,6 +21,7 @@ int main() {
 
     sleep_ms(3000);
 
+    seq_seven_segment_set(1337);
 
     uint64_t last_refresh = 0;
     uint16_t bpm_choices[25] = {0};
@@ -29,6 +32,7 @@ int main() {
         uint64_t current_time = time_us_64();
 
         seq_gpio_tick();
+        seq_seven_segment_tick();
         sequencer_tick();
 
 

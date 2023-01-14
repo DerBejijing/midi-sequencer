@@ -1,5 +1,7 @@
 #include "../include/seq_seven_segment.h"
 
+#include <stdio.h>
+
 #define SEGMENTS_COUNT 4
 #define SEGMENT_NONE 10
 
@@ -7,16 +9,6 @@
 #define D1_GND 3
 #define D2_GND 4
 #define D3_GND 5
-
-/*
-#define SEG_A 6
-#define SEG_B 7
-#define SEG_C 8
-#define SEG_D 9
-#define SEG_E 10
-#define SEG_F 11
-#define SEG_G 12
-*/
 
 #define SEG_A 12
 #define SEG_B 11
@@ -73,23 +65,6 @@ void seq_seven_segment_init(void) {
 
 
 void seq_seven_segment_tick(void) {
-    
-    /*gpio_put(SEG_A, 1);
-    gpio_put(SEG_B, 1);
-    gpio_put(SEG_C, 1);
-    gpio_put(SEG_D, 1);
-    gpio_put(SEG_E, 1);
-    gpio_put(SEG_F, 1);
-    gpio_put(SEG_G, 0);
-    
-    gpio_put(D0_GND, 0);
-    gpio_put(D1_GND, 0);
-    gpio_put(D2_GND, 0);
-    gpio_put(D3_GND, 0);
-    
-
-    return;*/
-
     if(time_us_64() < ss_illumination_started + ss_illumination_time) {
         for(uint8_t cycle = 0; cycle < ss_cycles; ++cycle) {
             for(uint8_t i = 0; i < SEGMENTS_COUNT; ++i) {
@@ -104,10 +79,10 @@ void seq_seven_segment_tick(void) {
                     gpio_put(SEG_F, ss_digits[i].f);
                     gpio_put(SEG_G, ss_digits[i].g);
                     
-                    gpio_put(D0_GND, i == 0);
-                    gpio_put(D1_GND, i == 1);
-                    gpio_put(D2_GND, i == 2);
-                    gpio_put(D3_GND, i == 3);
+                    gpio_put(D0_GND, i != 0);
+                    gpio_put(D1_GND, i != 1);
+                    gpio_put(D2_GND, i != 2);
+                    gpio_put(D3_GND, i != 3);
 
                     sleep_ms(2);
 
@@ -159,7 +134,7 @@ void seq_seven_segment_cycles(uint8_t cycles) {
 
 // private
 void seq_seven_segment_set_digit(uint8_t index, uint8_t number) {
-    struct ss_digit* ssd_struct = &ss_digits[index];
+    struct ss_digit* ssd_struct = &ss_digits[SEGMENTS_COUNT - index - 1];
 
     if(number == SEGMENT_NONE) {
         ssd_struct->render = 0;
@@ -167,7 +142,7 @@ void seq_seven_segment_set_digit(uint8_t index, uint8_t number) {
     }
 
     ssd_struct->render = 1;
-    
+
     if(number == 0) {
 		ssd_struct->a = 1;
 		ssd_struct->b = 1;
@@ -279,12 +254,6 @@ void seq_seven_segment_set(uint16_t data) {
 
     uint8_t length = num_length(data);
     uint8_t leading_zeroes = SEGMENTS_COUNT - length;
-
-    for(uint8_t i = 0; i < SEGMENTS_COUNT; ++i) {
-        seq_seven_segment_set_digit(i, i);
-    }
-
-    return;
 
     for(uint8_t i = leading_zeroes; i < SEGMENTS_COUNT; ++i) {
         uint8_t digit = num_digit(data, leading_zeroes + i);

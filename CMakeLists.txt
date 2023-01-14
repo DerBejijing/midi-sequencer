@@ -23,6 +23,7 @@ add_executable(midi-sequencer
         src/main.c
         src/seq_gpio.c
         src/seq_sequencer.c
+        src/seq_seven_segment.c
         )
 
 pico_set_program_name(midi-sequencer "midi-sequencer")
