@@ -20,9 +20,11 @@ int main() {
     seq_gpio_register_callback(0, 1, 1, sequencer_terminate);
 
     sleep_ms(3000);
-    
 
-    uint64_t last_refresh = 0;
+    seq_seven_segment_set(1337);
+
+    uint64_t last_refresh_v = 0;
+    uint64_t last_refresh_s = 0;
     uint16_t bpm_choices[25] = {0};
     for(uint8_t i = 0; i < 25; ++i) bpm_choices[i] = 60 + 20 * i;
 
@@ -31,12 +33,11 @@ int main() {
         uint64_t current_time = time_us_64();
 
         seq_gpio_tick();
-        seq_seven_segment_tick();
         sequencer_tick();
 
 
-        if(current_time > last_refresh + VALUES_REFRESH_US) {
-            last_refresh = current_time;
+        if(current_time > last_refresh_v + REFRESH_VALUES_US) {
+            last_refresh_v = current_time;
 
             for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
                 for(uint8_t stage = 0; stage < SEQ_STAGES; ++stage) sequencer_set_value(row * SEQ_STAGES + stage, seq_gpio_read_value(row, stage));
@@ -44,6 +45,11 @@ int main() {
                 sequencer_set_bpm(bpm_choices[seq_gpio_read_setting(6)]);
                 sequencer_set_stages(row, seq_gpio_read_setting(row));
             }
+        }
+
+        if(current_time > last_refresh_s + REFRESH_SEVEN_SEGMENT_US) {
+            last_refresh_s = current_time;
+            seq_seven_segment_tick();
         }
     }
 

@@ -84,7 +84,7 @@ void seq_seven_segment_tick(void) {
                     gpio_put(D2_GND, i != 2);
                     gpio_put(D3_GND, i != 3);
 
-                    sleep_ms(2);
+                    sleep_ms(1);
 
                     gpio_put(D0_GND, 1);
                     gpio_put(D1_GND, 1);
