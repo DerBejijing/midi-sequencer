@@ -20,8 +20,7 @@ int main() {
     seq_gpio_register_callback(0, 1, 1, sequencer_terminate);
 
     sleep_ms(3000);
-
-    seq_seven_segment_set(1337);
+    
 
     uint64_t last_refresh = 0;
     uint16_t bpm_choices[25] = {0};

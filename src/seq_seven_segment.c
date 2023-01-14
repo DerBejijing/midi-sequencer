@@ -5,10 +5,10 @@
 #define SEGMENTS_COUNT 4
 #define SEGMENT_NONE 10
 
-#define D0_GND 2
-#define D1_GND 3
-#define D2_GND 4
-#define D3_GND 5
+#define D0_GND 5
+#define D1_GND 4
+#define D2_GND 3
+#define D3_GND 2
 
 #define SEG_A 12
 #define SEG_B 11
@@ -134,7 +134,7 @@ void seq_seven_segment_cycles(uint8_t cycles) {
 
 // private
 void seq_seven_segment_set_digit(uint8_t index, uint8_t number) {
-    struct ss_digit* ssd_struct = &ss_digits[SEGMENTS_COUNT - index - 1];
+    struct ss_digit* ssd_struct = &ss_digits[index];
 
     if(number == SEGMENT_NONE) {
         ssd_struct->render = 0;
@@ -256,12 +256,24 @@ void seq_seven_segment_set(uint16_t data) {
     uint8_t leading_zeroes = SEGMENTS_COUNT - length;
 
     for(uint8_t i = leading_zeroes; i < SEGMENTS_COUNT; ++i) {
-        uint8_t digit = num_digit(data, leading_zeroes + i);
+        uint8_t digit = num_digit(data, i - leading_zeroes);
         seq_seven_segment_set_digit(i, digit);
     }
 }
 
 
 void seq_seven_segment_set_prefix(uint8_t prefix, uint16_t data) {
+	ss_illumination_started = time_us_64();
 
+    seq_seven_segment_clear();
+
+    uint8_t length = num_length(data);
+    uint8_t leading_zeroes = SEGMENTS_COUNT - length;
+
+	seq_seven_segment_set_digit(0, prefix);
+
+	for(uint8_t i = leading_zeroes; i < SEGMENTS_COUNT; ++i) {
+        uint8_t digit = num_digit(data, i - leading_zeroes);
+        seq_seven_segment_set_digit(i, digit);
+    }
 }
