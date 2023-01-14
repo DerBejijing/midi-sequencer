@@ -30,6 +30,9 @@
 #define ADDR_SETTINGS 2
 #define ADDR_BUTTONS 3
 
+#define LED_SERIAL 0
+#define LED_PARALLEL 1 
+
 #define SETTINGS_BUTTONS 7
 #define SETTINGS_VALUES 7
 
@@ -99,14 +102,17 @@ void seq_gpio_init(void) {
     gpio_init(MAIN_MUX_CH_C);
     gpio_set_dir(MAIN_MUX_CH_C, GPIO_OUT);
 
+    gpio_init(LED_SERIAL);
+    gpio_set_dir(LED_SERIAL, GPIO_OUT);
+    gpio_init(LED_PARALLEL);
+    gpio_set_dir(LED_PARALLEL, GPIO_OUT);
+
     adc_init();
     adc_gpio_init(MAIN_MUX_READ);
     adc_select_input(2);
 
-    // initialize callback pointer
     for(uint8_t i = 0; i < SEQ_STAGES + SETTINGS_BUTTONS; ++i) sg_button_callback[i].callback = seq_gpio_callback_void;
     
-    // initialize values for switches
     gpio_put(MAIN_MUX_CH_A, ADDR_ROW_3 >> 0 & 1);
     gpio_put(MAIN_MUX_CH_B, ADDR_ROW_3 >> 1 & 1);
     gpio_put(MAIN_MUX_CH_C, ADDR_ROW_3 >> 2 & 1);
@@ -138,6 +144,12 @@ void seq_gpio_tick(void) {
     }
 
     seq_gpio_matrix_tick();
+}
+
+
+void seq_gpio_indicator_joined(uint8_t joined) {
+    gpio_put(LED_SERIAL, joined);
+    gpio_put(LED_PARALLEL, !joined);
 }
 
 

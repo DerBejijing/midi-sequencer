@@ -15,6 +15,7 @@
     },
     "files.associations": {
       "stdio.h": "c",
-      "seq_globals.h": "c"
+      "seq_globals.h": "c",
+      "adc.h": "c"
     },
 }

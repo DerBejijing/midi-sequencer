@@ -147,15 +147,21 @@ void sequencer_process_initial(void) {
 }
 
 
+void sequencer_terminate(void) {
+    seq_terminate = 1;
+}
+
+
+void sequencer_toggle_joined(void) {
+    seq_join =! seq_join;
+    seq_gpio_indicator_joined(seq_join);
+}
+
+
 void sequencer_toggle_running(void) {
     seq_running =! seq_running;
     if(seq_running) {
         sequencer_init();
         sequencer_process_initial();
     }
-}
-
-
-void sequencer_terminate(void) {
-    seq_terminate = 1;
 }

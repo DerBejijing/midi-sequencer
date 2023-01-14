@@ -13,6 +13,8 @@
 void seq_gpio_init(void);
 void seq_gpio_tick(void);
 
+void seq_gpio_indicator_joined(uint8_t joined);
+
 void seq_gpio_matrix_tick(void);
 void seq_gpio_matrix_clear(void);
 void seq_gpio_matrix_cycles(uint8_t cycles);

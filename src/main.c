@@ -12,11 +12,13 @@
 
 int main() {
     stdio_init_all();
+
     seq_gpio_init();
     seq_seven_segment_init();
     sequencer_init();
 
     seq_gpio_register_callback(0, 0, 1, sequencer_toggle_running);
+    seq_gpio_register_callback(0, 6, 1, sequencer_toggle_joined);
     seq_gpio_register_callback(0, 1, 1, sequencer_terminate);
 
     seq_seven_segment_time(500000);
