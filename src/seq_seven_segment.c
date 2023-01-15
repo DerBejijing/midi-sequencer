@@ -1,7 +1,5 @@
 #include "../include/seq_seven_segment.h"
 
-#include <stdio.h>
-
 #define SEGMENTS_COUNT 4
 #define SEGMENT_NONE 10
 
