@@ -15,7 +15,7 @@ uint64_t seq_us_per_beat = 500000;                 // speed of the sequence(s)
 
 uint8_t seq_values[SEQ_STAGES * SEQ_ROWS] = {0};
 uint8_t seq_durations[SEQ_STAGES * SEQ_ROWS] = {1};
-uint8_t seq_ratchets[SEQ_STAGES * SEQ_ROWS] = {0};
+uint8_t seq_ratchets[SEQ_STAGES * SEQ_ROWS] = {1};
 
 struct seq_row {
     uint8_t id;                 // aka row
@@ -108,6 +108,7 @@ void sequencer_tick(void) {
             seq_gpio_matrix_set(play_row, play_stage);
         }
     } else {
+        /*
         for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
             if(current_time >= seq_rows[row].last_clock + seq_us_per_beat) {
                 struct seq_row* current_row = &seq_rows[row];
@@ -131,7 +132,46 @@ void sequencer_tick(void) {
                     printf("row [%d] stage [%d], start now: %d\n", row, current_row->stage, seq_values[row * SEQ_STAGES + current_row->stage]);
                 } else seq_gpio_matrix_set(row, STAGE_NONE);
             }
+        }*/
+
+
+        for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+            struct seq_row* current_row = &seq_rows[row];
+
+            uint8_t play_note = 0;
+
+            if(current_time >= current_row->last_clock + seq_us_per_beat) {
+                current_row->last_clock = current_time;
+
+                if(current_row->active) {
+                    ++current_row->stage;
+                    if(current_row->stage >= current_row->stages) current_row->stage = 0;
+
+                    seq_gpio_matrix_set(row, current_row->stage);
+
+                    if(seq_terminate) if(current_row->stage == 0) {
+                        current_row->active = 0;
+                        seq_gpio_matrix_set(row, STAGE_NONE);
+                        return;
+                    }
+
+                    play_note = 1;
+                } else seq_gpio_matrix_set(row, STAGE_NONE);
+            }
+
+            uint8_t ratchets = seq_ratchets[SEQ_STAGES * row + current_row->stage];
+            uint64_t ratchet_time = seq_us_per_beat / 2;
+
+            if(current_time >= current_row->last_ratchet + ratchet_time) {
+                current_row->last_ratchet = current_time;
+                if(current_row->active) play_note = 1;
+            }
+
+            if(play_note) {
+                printf("row [%d] stage [%d], start now: %d\n", row, current_row->stage, seq_values[row * SEQ_STAGES + current_row->stage]);
+            }
         }
+
     }
 
     if(seq_terminate) if(!seq_join) {
