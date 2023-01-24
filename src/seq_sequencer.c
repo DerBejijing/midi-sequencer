@@ -61,7 +61,7 @@ void sequencer_init(void) {
     }
 
     for(uint8_t i = 0; i < SEQ_ROWS * SEQ_STAGES; ++i) {
-        seq_ratchets[i] = 1;
+        seq_ratchets[i] = 2;
         seq_durations[i] = 1;
     }
 }
@@ -116,7 +116,7 @@ void sequencer_tick(void) {
             seq_gpio_matrix_set(play_row, play_stage);
         }*/
 
-        uint8_t note = 0;
+        /*uint8_t note = 0;
         uint8_t play_note = 0;
         uint8_t play_row = 0;
         uint8_t play_stage = 0;
@@ -139,7 +139,6 @@ void sequencer_tick(void) {
 
             // find row and stage
             uint8_t index = 0;
-            uint8_t search = 1;
 
             for(uint8_t row = 0; row < SEQ_ROWS && !play_note; ++row) {
                 for(uint8_t stage = 0; stage < seq_rows[row].stages && !play_note; ++stage) {
@@ -156,6 +155,60 @@ void sequencer_tick(void) {
             // set matrix
             seq_gpio_matrix_clear();
             seq_gpio_matrix_set(play_row, play_stage);
+        }
+
+        uint8_t ratchets = seq_ratchets[SEQ_STAGES * play_row + play_stage];
+        uint64_t ratchet_time = seq_us_per_beat / ratchets;
+
+        if(current_time >= seq_join_last_ratchet + ratchet_time) {
+            seq_join_last_ratchet = current_time;
+            play_note = 1;
+        }
+
+        if(play_note) {
+            printf("row [%d] stage [%d], start now: %d\n", play_row, play_stage, seq_values[play_row * SEQ_STAGES + play_stage]);
+        }*/
+
+        uint8_t note = 0;
+        uint8_t play_note = 0;
+        uint8_t play_row = 0;
+        uint8_t play_stage = 0;
+
+        uint8_t index = 0;
+
+        for(uint8_t row = 0; row < SEQ_ROWS && !play_note; ++row) {
+            for(uint8_t stage = 0; stage < seq_rows[row].stages && !play_note; ++stage) {
+                if(index == seq_join_step) {
+                    play_row = row;
+                    play_stage = stage; 
+                    note = seq_values[row * SEQ_STAGES + stage];
+                }
+                ++index;
+            }
+        }
+
+        if(current_time >= seq_join_last_clock + seq_us_per_beat) {
+            seq_join_last_clock = current_time;
+            seq_join_last_ratchet = current_time;
+
+            // advance step
+            ++seq_join_step;
+
+            // check if end reached
+            if(seq_join_step >= seq_join_length) seq_join_step = 0;
+
+            // check if terminate
+            if(seq_terminate) if(seq_join_step == 0) {
+                sequencer_toggle_running();
+                return;
+            }
+
+            // set matrix
+            seq_gpio_matrix_clear();
+            seq_gpio_matrix_set(play_row, play_stage);
+
+            // play note
+            play_note = 1;
         }
 
         uint8_t ratchets = seq_ratchets[SEQ_STAGES * play_row + play_stage];
@@ -193,7 +246,7 @@ void sequencer_tick(void) {
                     if(seq_terminate) if(current_row->stage == 0) {
                         current_row->active = 0;
                         seq_gpio_matrix_set(row, STAGE_NONE);
-                        return;
+                        //return;
                     }
 
                     play_note = 1;
