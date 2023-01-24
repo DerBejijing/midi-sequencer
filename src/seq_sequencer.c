@@ -78,7 +78,7 @@ void sequencer_tick(void) {
             if(seq_join_step >= seq_join_length) seq_join_step = 0;
 
             // check if terminate
-            if(seq_terminate) if(seq_join_step = 0) sequencer_toggle_running;
+            if(seq_terminate) if(seq_join_step == 0) sequencer_toggle_running();
 
             // find row and stage
             uint8_t play_row = 0;
@@ -152,6 +152,10 @@ void sequencer_set_stages(uint8_t row_id, uint8_t stages) {
     seq_rows[row_id].stages = stages;
     if(seq_rows[row_id].stage >= stages) seq_rows[row_id].stage = 0;
     
+    // changes possible here
+    seq_join_length = 0;
+    for(uint8_t i = 0; i < SEQ_ROWS; ++i) seq_join_length += seq_rows[i].stages;
+
     if(stages == 0) {
         seq_rows[row_id].active = 0;
         seq_rows[row_id].render = 0;
@@ -190,7 +194,9 @@ void sequencer_terminate(void) {
 
 void sequencer_toggle_joined(void) {
     seq_join =! seq_join;
+    seq_running = 0;
     seq_gpio_indicator_joined(seq_join);
+    sequencer_init();
 }
 
 

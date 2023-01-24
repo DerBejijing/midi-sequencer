@@ -349,7 +349,7 @@ void seq_gpio_tick_settings(void) {
 
 
 void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t momentary, void (*callback)()) {
-    uint8_t index = is_interface * (SETTINGS_BUTTONS - 1) + button;
+    uint8_t index = is_interface * (SETTINGS_BUTTONS - 0) + button;
 
     printf("register %d %d %d (%p)-> %d\n", is_interface, button, momentary, callback, index);
 
@@ -362,7 +362,7 @@ void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t mo
 
 
 void seq_gpio_process_callback(uint8_t is_interface, uint8_t button) {
-    uint8_t index = is_interface * (SETTINGS_BUTTONS - 1) + button;
+    uint8_t index = is_interface * (SETTINGS_BUTTONS - 0) + button;
 
     printf("%d %d (%p) -> %d\n", is_interface, button, sg_button_callback[index].callback, index);
 
