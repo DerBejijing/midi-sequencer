@@ -64,34 +64,70 @@ void sequencer_init(void) {
 
 void sequencer_tick(void) {
     if(!seq_running) return;
-    if(seq_join) return;
-
+    
     uint64_t current_time = time_us_64();
+    
+    if(seq_join) {
+        if(current_time >= seq_join_last_clock + seq_us_per_beat) {
+            seq_join_last_clock = current_time;
 
-    for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
-        if(current_time >= seq_rows[row].last_clock + seq_us_per_beat) {
-            struct seq_row* current_row = &seq_rows[row];
+            // advance step
+            ++seq_join_step;
 
-            current_row->last_clock = current_time;
+            // check if end reached
+            if(seq_join_step >= seq_join_length) seq_join_step = 0;
 
-            if(current_row->active) {
-                ++current_row->stage;
+            // check if terminate
+            if(seq_terminate) if(seq_join_step = 0) sequencer_toggle_running;
 
-                if(current_row->stage >= current_row->stages) {
-                    current_row->stage = 0;
+            // find row and stage
+            uint8_t play_row = 0;
+            uint8_t play_stage = 0;
+            uint8_t index = 0;
+            uint8_t search = 1;
+
+            for(uint8_t row = 0; row < SEQ_ROWS && search; ++row) {
+                for(uint8_t stage = 0; stage < seq_rows[row].stages && search; ++stage) {
+                    if(index == seq_join_step) {
+                        play_row = row;
+                        play_stage = stage;
+                        search = 0;
+                    }
+                    ++index;
                 }
+            }
 
-                seq_gpio_matrix_set(row, current_row->stage);
+            // play note
+            printf("row [%d] stage [%d], start now: %d\n", play_row, play_stage, seq_values[play_row * SEQ_STAGES + play_stage]);
 
-                if(seq_terminate) if(current_row->stage == 0) {
-                    current_row->active = 0;
-                    seq_gpio_matrix_set(row, STAGE_NONE);
-                    return;
-                }
+            // set matrix
+            seq_gpio_matrix_clear();
+            seq_gpio_matrix_set(play_row, play_stage);
+        }
+    } else {
+        for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+            if(current_time >= seq_rows[row].last_clock + seq_us_per_beat) {
+                struct seq_row* current_row = &seq_rows[row];
 
-                // play new note here
-                printf("row [%d] stage [%d], start now: %d\n", row, current_row->stage, seq_values[row * SEQ_STAGES + current_row->stage]);
-            } else seq_gpio_matrix_set(row, STAGE_NONE);
+                current_row->last_clock = current_time;
+
+                if(current_row->active) {
+                    ++current_row->stage;
+
+                    if(current_row->stage >= current_row->stages) current_row->stage = 0;
+
+                    seq_gpio_matrix_set(row, current_row->stage);
+
+                    if(seq_terminate) if(current_row->stage == 0) {
+                        current_row->active = 0;
+                        seq_gpio_matrix_set(row, STAGE_NONE);
+                        return;
+                    }
+
+                    // play new note here
+                    printf("row [%d] stage [%d], start now: %d\n", row, current_row->stage, seq_values[row * SEQ_STAGES + current_row->stage]);
+                } else seq_gpio_matrix_set(row, STAGE_NONE);
+            }
         }
     }
 
