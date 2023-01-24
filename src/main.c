@@ -6,6 +6,7 @@
 
 #include "../include/seq_globals.h"
 #include "../include/seq_gpio.h"
+#include "../include/seq_interface.h"
 #include "../include/seq_sequencer.h"
 #include "../include/seq_seven_segment.h"
 
@@ -13,17 +14,20 @@
 int main() {
     stdio_init_all();
 
+    sleep_ms(2000);
+
     seq_gpio_init();
+    seq_interface_init();
     seq_seven_segment_init();
     sequencer_init();
 
     seq_gpio_register_callback(0, 0, 1, sequencer_toggle_running);
-    seq_gpio_register_callback(0, 6, 1, sequencer_toggle_joined);
+    seq_gpio_register_callback(1, 6, 1, sequencer_toggle_joined);
     seq_gpio_register_callback(0, 1, 1, sequencer_terminate);
 
     seq_seven_segment_time(500000);
 
-    sleep_ms(3000);
+    sleep_ms(2000);
 
     seq_seven_segment_set(1337);
 
@@ -41,6 +45,8 @@ int main() {
 
         if(current_time > last_refresh_v + REFRESH_VALUES_US) {
             last_refresh_v = current_time;
+
+            seq_interface_tick();
 
             for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
                 for(uint8_t stage = 0; stage < SEQ_STAGES; ++stage) sequencer_set_value(row * SEQ_STAGES + stage, seq_gpio_read_value(row, stage));

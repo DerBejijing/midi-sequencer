@@ -55,7 +55,8 @@ struct callback {
 struct analog_reading sg_values_stages[SEQ_ROWS * SEQ_STAGES];
 struct analog_reading sg_values_settings[SETTINGS_BUTTONS];
 
-struct callback sg_button_callback[SEQ_STAGES + SETTINGS_BUTTONS];
+// first settings, then interface
+struct callback sg_button_callback[SETTINGS_BUTTONS + SEQ_STAGES];
 
 uint8_t sg_values_interface[SEQ_STAGES];
 uint8_t sg_values_buttons[SETTINGS_BUTTONS];
@@ -348,7 +349,9 @@ void seq_gpio_tick_settings(void) {
 
 
 void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t momentary, void (*callback)()) {
-    uint8_t index = is_interface * SEQ_ROWS + button;
+    uint8_t index = is_interface * (SETTINGS_BUTTONS - 1) + button;
+
+    printf("register %d %d %d (%p)-> %d\n", is_interface, button, momentary, callback, index);
 
     sg_button_callback[index].callback = callback;
     sg_button_callback[index].is_interface = is_interface;
@@ -359,7 +362,9 @@ void seq_gpio_register_callback(uint8_t is_interface, uint8_t button, uint8_t mo
 
 
 void seq_gpio_process_callback(uint8_t is_interface, uint8_t button) {
-    uint8_t index = is_interface * (SEQ_STAGES - 1) + button;
+    uint8_t index = is_interface * (SETTINGS_BUTTONS - 1) + button;
+
+    printf("%d %d (%p) -> %d\n", is_interface, button, sg_button_callback[index].callback, index);
 
     sg_button_callback[index].state =! sg_button_callback[index].state;
 
@@ -367,7 +372,7 @@ void seq_gpio_process_callback(uint8_t is_interface, uint8_t button) {
         if(sg_button_callback[index].state) sg_button_callback[index].callback();
         return;
     }
-    sg_button_callback[index].callback();                                           // apparently called as soon as seq starts -> initialize buttons
+    sg_button_callback[index].callback();
 }
 
 

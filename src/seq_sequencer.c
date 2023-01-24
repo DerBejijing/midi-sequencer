@@ -159,6 +159,7 @@ void sequencer_toggle_joined(void) {
 
 
 void sequencer_toggle_running(void) {
+    printf("toggle running\n");
     seq_running =! seq_running;
     if(seq_running) {
         sequencer_init();
