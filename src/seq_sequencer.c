@@ -54,7 +54,7 @@ void sequencer_init(void) {
         seq_rows[row].type = 0;
         seq_rows[row].stage = 0;
         seq_rows[row].stages = SEQ_STAGES;
-        seq_rows[row].active = 1;
+        //seq_rows[row].active = 0;                         // do not reset this value
         seq_rows[row].render = 1;
         seq_rows[row].last_clock = current_time;
         seq_rows[row].last_ratchet = current_time;
@@ -78,7 +78,10 @@ void sequencer_tick(void) {
             if(seq_join_step >= seq_join_length) seq_join_step = 0;
 
             // check if terminate
-            if(seq_terminate) if(seq_join_step == 0) sequencer_toggle_running();
+            if(seq_terminate) if(seq_join_step == 0) {
+                sequencer_toggle_running();
+                return;
+            }
 
             // find row and stage
             uint8_t play_row = 0;
@@ -131,7 +134,7 @@ void sequencer_tick(void) {
         }
     }
 
-    if(seq_terminate) {
+    if(seq_terminate) if(!seq_join) {
         uint8_t run = 0;
         for(uint8_t row = 0; row < SEQ_ROWS; ++row) run += seq_rows[row].active;
         if(run == 0) sequencer_toggle_running();
@@ -160,9 +163,10 @@ void sequencer_set_stages(uint8_t row_id, uint8_t stages) {
         seq_rows[row_id].active = 0;
         seq_rows[row_id].render = 0;
     } else {
+        seq_rows[row_id].active = 1;
+        
         if(seq_join) return;
 
-        seq_rows[row_id].active = 1;
         seq_rows[row_id].render = 1;
     }
 }
@@ -210,7 +214,6 @@ void sequencer_toggle_joined(void) {
 
 
 void sequencer_toggle_running(void) {
-    printf("toggle running\n");
     seq_running =! seq_running;
     if(seq_running) {
         sequencer_init();
