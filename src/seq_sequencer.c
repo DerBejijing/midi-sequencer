@@ -175,13 +175,22 @@ void sequencer_set_value(uint8_t index, uint8_t value) {
 
 // "private"
 void sequencer_process_initial(void) {
-    if(seq_join) return;
+    if(seq_join) {
+        for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+            if(seq_rows[row].active) {
 
-    for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
-        if(seq_rows[row].active) {
+                // play new note here
+                printf("row [%d] stage [%d], start now: %d\n", row, 0, seq_values[row * SEQ_STAGES]);
+                return;
+            }
+        }
+    } else {
+        for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+            if(seq_rows[row].active) {
 
-            // play new note here
-            printf("row [%d] stage [%d], start now: %d\n", row, seq_rows[row].stage, seq_values[row * SEQ_STAGES + seq_rows[row].stage]);
+                // play new note here
+                printf("row [%d] stage [%d], start now: %d\n", row, seq_rows[row].stage, seq_values[row * SEQ_STAGES + seq_rows[row].stage]);
+            }
         }
     }
 }
