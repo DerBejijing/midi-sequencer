@@ -34,16 +34,19 @@ void seq_interface_change_clear(void) {
 
 
 void seq_interface_mode_ratcheting(void) {
+    seq_ui_mode = 0;
     printf("ratchet\n");
 }
 
 
 void seq_interface_mode_duration(void) {
+    seq_ui_mode = 1;
     printf("duration\n");
 }
 
 
 void seq_interface_mode_gate(void) {
+    seq_ui_mode = 2;
     printf("gate\n");
 }
 
@@ -59,11 +62,13 @@ void seq_interface_select_row_down(void) {
 
 
 void seq_interface_stage_select(uint8_t stage) {
+    seq_seven_segment_set(stage);
     if(stage < 0 || stage >= SEQ_ROWS * SEQ_STAGES) return;
     seq_ui_stage = stage;
 }
 
 
 void seq_interface_stage_set(uint8_t value) {
+    seq_seven_segment_set(value);
     seq_ui_value = value;
 }

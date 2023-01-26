@@ -212,6 +212,16 @@ void sequencer_set_value(uint8_t index, uint8_t value) {
 }
 
 
+void sequencer_set_duration(uint8_t index, uint8_t value) {
+    seq_durations[index] = value;
+}
+
+
+void sequencer_set_ratchets(uint8_t index, uint8_t value) {
+    seq_ratchets[index] = value;
+}
+
+
 // "private"
 void sequencer_process_initial(void) {
     if(seq_join) {

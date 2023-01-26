@@ -4,6 +4,7 @@
 #include "seq_globals.h"
 #include "seq_gpio.h"
 #include "seq_sequencer.h"
+#include "seq_seven_segment.h"
 
 void seq_interface_init(void);
 void seq_interface_tick(void);
