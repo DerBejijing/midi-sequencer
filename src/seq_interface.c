@@ -1,5 +1,10 @@
 #include "../include/seq_interface.h"
 
+uint8_t seq_ui_stage = 0;
+uint8_t seq_ui_value = 0;
+uint8_t seq_ui_mode = 0;
+
+
 void seq_interface_init(void) {
     seq_gpio_register_callback(1, 0, 0, seq_interface_mode_ratcheting);
     seq_gpio_register_callback(1, 1, 0, seq_interface_mode_duration);
@@ -18,7 +23,8 @@ void seq_interface_tick(void) {
 
 
 void seq_interface_change_write(void) {
-    printf("write\n");
+    if(seq_ui_mode == 0) sequencer_set_ratchets(seq_ui_stage, seq_ui_value);
+    if(seq_ui_mode == 1) sequencer_set_duration(seq_ui_stage, seq_ui_value);
 }
 
 
@@ -49,4 +55,15 @@ void seq_interface_select_row_toggle_note(void) {
 
 void seq_interface_select_row_down(void) {
     printf("down\n");
+}
+
+
+void seq_interface_stage_select(uint8_t stage) {
+    if(stage < 0 || stage >= SEQ_ROWS * SEQ_STAGES) return;
+    seq_ui_stage = stage;
+}
+
+
+void seq_interface_stage_set(uint8_t value) {
+    seq_ui_value = value;
 }

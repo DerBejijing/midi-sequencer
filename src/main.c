@@ -53,6 +53,9 @@ int main() {
 
                 sequencer_set_bpm(bpm_choices[seq_gpio_read_setting(6)]);
                 sequencer_set_stages(row, seq_gpio_read_setting(row));
+
+                seq_interface_stage_select(seq_gpio_read_setting(3));
+                seq_interface_stage_set(seq_gpio_read_setting(4));
             }
         }
 

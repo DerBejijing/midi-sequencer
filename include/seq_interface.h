@@ -18,4 +18,7 @@ void seq_interface_mode_gate(void);
 void seq_interface_select_row_toggle_note(void);
 void seq_interface_select_row_down(void);
 
+void seq_interface_stage_select(uint8_t stage);
+void seq_interface_stage_set(uint8_t value);
+
 #endif
