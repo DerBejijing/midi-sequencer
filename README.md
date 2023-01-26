@@ -2,7 +2,7 @@
 midi sequencer firmware for raspberry pico (moog 960-sequencer inspired)
 
 - [ ] transmit values over midi  
-- [ ] add ratcheting  
+- [x] add ratcheting  
 - [ ] add variable step length  
 - [ ] comment code  
 - [ ] add serial communication to controller  
