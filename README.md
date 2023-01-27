@@ -7,6 +7,6 @@ midi sequencer firmware for raspberry pico (moog 960-sequencer inspired)
 
 TODO-List:  
 ---> transmit values over midi  
----> comment code  
+---> add more functionality to interface row  
 ---> add serial communication to controller  
 ---> find out how to make markdown add padding to a list next to an image >:(
