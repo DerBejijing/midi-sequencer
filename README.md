@@ -1,5 +1,6 @@
-# sequencer-32
-midi sequencer firmware for raspberry pico (moog 960-sequencer inspired)
+# midi-sequencer
+midi sequencer firmware for raspberry pico (moog 960-sequencer inspired)  
+Inspired by moog, but turned out to look more like the MAQ16 lul  
 
 <br/>
 
