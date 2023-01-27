@@ -1,13 +1,18 @@
 #include "../include/seq_seven_segment.h"
 
+// how many digits the display has
 #define SEGMENTS_COUNT 4
+
+// value to represent "no digit"
 #define SEGMENT_NONE 10
 
+// all ground connections
 #define D0_GND 5
 #define D1_GND 4
 #define D2_GND 3
 #define D3_GND 2
 
+// all segment connections
 #define SEG_A 12
 #define SEG_B 11
 #define SEG_C 10
@@ -17,6 +22,7 @@
 #define SEG_G 6
 
 
+// struct to store the data of a single digit
 struct ss_digit {
 	uint8_t render;
 	uint8_t a;
@@ -28,13 +34,20 @@ struct ss_digit {
 	uint8_t g;
 };
 
-uint64_t ss_cycles = 1;
-uint64_t ss_illumination_started = 0;
-uint64_t ss_illumination_time = 10000000;
-
+// array to store all digits
 struct ss_digit ss_digits[SEGMENTS_COUNT];
 
 
+// how many times the display should be re-rendered
+uint64_t ss_cycles = 1;
+
+// store time of when illumination has started and how long it should last
+uint64_t ss_illumination_started = 0;
+uint64_t ss_illumination_time = 10000000;
+
+
+
+/* initialize the display */
 void seq_seven_segment_init(void) {
     gpio_init(D0_GND);
 	gpio_set_dir(D0_GND, GPIO_OUT);
@@ -62,11 +75,16 @@ void seq_seven_segment_init(void) {
 }
 
 
+/* update the display */
 void seq_seven_segment_tick(void) {
+	// check if it should still be rendered
     if(time_us_64() < ss_illumination_started + ss_illumination_time) {
+
+		// redo as long as is desired
         for(uint8_t cycle = 0; cycle < ss_cycles; ++cycle) {
             for(uint8_t i = 0; i < SEGMENTS_COUNT; ++i) {
 
+				// only render, if it should be
                 if(ss_digits[i].render) {
 
                     gpio_put(SEG_A, ss_digits[i].a);
@@ -82,6 +100,7 @@ void seq_seven_segment_tick(void) {
                     gpio_put(D2_GND, i != 2);
                     gpio_put(D3_GND, i != 3);
 
+					// time is money and money is time. Waste it here
                     sleep_ms(1);
 
                     gpio_put(D0_GND, 1);
@@ -96,7 +115,6 @@ void seq_seven_segment_tick(void) {
                     gpio_put(SEG_E, 0);
                     gpio_put(SEG_F, 0);
                     gpio_put(SEG_G, 0);
-
                 }
             }
         }
@@ -104,6 +122,7 @@ void seq_seven_segment_tick(void) {
 }
 
 
+/* clear the display */
 void seq_seven_segment_clear(void) {
     for(uint8_t i = 0; i < SEGMENTS_COUNT; ++i) {
         ss_digits[i].render = 0;
@@ -116,24 +135,32 @@ void seq_seven_segment_clear(void) {
         ss_digits[i].g = 0;
     }
 
+	// reset illumination time
     ss_illumination_started = 0;
 }
 
 
+/* set how long the display should be illuminated after setting a value
+-> time_us: integer value representing how long it should be lit in microseconds */
 void seq_seven_segment_time(uint64_t time_us) {
     ss_illumination_time = time_us;
 }
 
 
+/* set how many times the display should be re-rendered
+-> cycles: integer value */
 void seq_seven_segment_cycles(uint8_t cycles) {
     ss_cycles = cycles;
 }
 
 
-// private
+/* set individual digits
+-> index: integer value representing the desired digit
+-> number: integer value from 0-9 */
 void seq_seven_segment_set_digit(uint8_t index, uint8_t number) {
     struct ss_digit* ssd_struct = &ss_digits[index];
 
+	// if it is "no digit", it should not be rendered
     if(number == SEGMENT_NONE) {
         ssd_struct->render = 0;
         return;
@@ -225,6 +252,9 @@ void seq_seven_segment_set_digit(uint8_t index, uint8_t number) {
 }
 
 
+/* calculate the number of digits for a number
+-> number: integer value
+-> returns number of digits */
 uint8_t num_length(uint16_t number) {
 	if(number < 10) return 1;
 	if(number < 100) return 2;
@@ -234,6 +264,9 @@ uint8_t num_length(uint16_t number) {
 }
 
 
+/* extract a digit from a given number
+-> number: integer value
+-> digit: integer value representing a digit (least significant first) */
 uint8_t num_digit(uint16_t number, uint8_t digit) {
 	uint8_t length = num_length(number);
 	if(digit >= length || digit < 0) return 0;
@@ -245,14 +278,20 @@ uint8_t num_digit(uint16_t number, uint8_t digit) {
 }
 
 
+/* set a number to be displayed
+-> data: integer value to be rendered */
 void seq_seven_segment_set(uint16_t data) {
+	// clear display
 	seq_seven_segment_clear();
 
+	// reset illumination time
     ss_illumination_started = time_us_64();
 
+	// calculate length and number of leading zeroes
     uint8_t length = num_length(data);
     uint8_t leading_zeroes = SEGMENTS_COUNT - length;
 
+	// set all digits, ignoring leading zeroes
     for(uint8_t i = leading_zeroes; i < SEGMENTS_COUNT; ++i) {
         uint8_t digit = num_digit(data, i - leading_zeroes);
         seq_seven_segment_set_digit(i, digit);
@@ -260,16 +299,24 @@ void seq_seven_segment_set(uint16_t data) {
 }
 
 
+/* set a number with a prefix to be displayed
+-> prefix: integer value ranging from 0-9
+-> data: integer value to be rendered */
 void seq_seven_segment_set_prefix(uint8_t prefix, uint16_t data) {
+	// clear display
 	seq_seven_segment_clear();
 	
+	// reset illumination time
 	ss_illumination_started = time_us_64();
 
+	// calculate length and number of leading zeroes
     uint8_t length = num_length(data);
     uint8_t leading_zeroes = SEGMENTS_COUNT - length;
 
+	// set the prefix
 	seq_seven_segment_set_digit(0, prefix);
 
+	// set all digits, ignoring prefix and leading zeroes
 	for(uint8_t i = leading_zeroes; i < SEGMENTS_COUNT; ++i) {
         uint8_t digit = num_digit(data, i - leading_zeroes);
         seq_seven_segment_set_digit(i, digit);
