@@ -97,7 +97,89 @@ void sequencer_tick(void) {
     
     // sequencer running in serial mode
     if(seq_join) {
+        // store if the note should be played now
+        uint8_t play_note = 0;
+
+
+        // check if the note should be played
+        // and if the current step should be incremented
+        if(current_time >= seq_join_last_clock + seq_us_per_beat) {
+            // reset time of last clock and ratchet
+            seq_join_last_clock = current_time;
+            seq_join_last_ratchet = current_time;
+
+            // increment the stage
+            ++seq_join_step;
+
+            // reset stage if it has exceeded it's length
+            if(seq_join_step >= seq_join_length) seq_join_step = 0;
+
+            // if the sequence has just reset and should terminate, stop the sequencer
+            if(seq_terminate) if(seq_join_step == 0) {
+                sequencer_toggle_running();
+                return;
+            }
+
+            // note should be played
+            play_note = 1;
+        }
+
+
         // store the note to be played
+        uint8_t note = 0;
+
+        // store the row of the note
+        uint8_t play_row = 0;
+
+        // store the stage of the note
+        uint8_t play_stage = 0;
+
+
+        // search for the desired stage
+        uint8_t index = 0;
+        for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+            for(uint8_t stage = 0; stage < seq_rows[row].stages; ++stage) {
+                if(index == seq_join_step) {
+                    // note was found, set values accordingly
+                    play_row = row;
+                    play_stage = stage; 
+                    note = seq_values[row * SEQ_STAGES + stage];
+                }
+                ++index;
+            }
+        }
+
+
+        // set LED matrix
+        seq_gpio_matrix_clear();
+        seq_gpio_matrix_set(play_row, play_stage);
+
+
+        // calculate how many ratchets should happen on the current step
+        // and how long the delay between the events needs to be
+        uint8_t ratchets = seq_ratchets[SEQ_STAGES * play_row + play_stage];
+        uint64_t ratchet_time = seq_us_per_beat / ratchets;
+
+
+        // check if ratchet event should happen
+        if(current_time >= seq_join_last_ratchet + ratchet_time) {
+            // reset last time of ratcheting
+            seq_join_last_ratchet = current_time;
+
+            // note should be played
+            play_note = 1;
+        }
+
+        // if note should be played, play it
+        if(play_note) {
+            printf("row [%d] stage [%d], start now: %d\n", play_row, play_stage, seq_values[play_row * SEQ_STAGES + play_stage]);
+        }
+
+
+
+
+
+        /*// store the note to be played
         uint8_t note = 0;
 
         // store if the note should be played now
@@ -112,8 +194,8 @@ void sequencer_tick(void) {
 
         // search for the desired stage
         uint8_t index = 0;
-        for(uint8_t row = 0; row < SEQ_ROWS && !play_note; ++row) {
-            for(uint8_t stage = 0; stage < seq_rows[row].stages && !play_note; ++stage) {
+        for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
+            for(uint8_t stage = 0; stage < seq_rows[row].stages; ++stage) {
                 if(index == seq_join_step) {
                     // note was found, set values accordingly
                     play_row = row;
@@ -151,10 +233,12 @@ void sequencer_tick(void) {
             play_note = 1;
         }
 
+
         // calculate how many ratchets should happen on the current step
         // and how long the delay between the events needs to be
         uint8_t ratchets = seq_ratchets[SEQ_STAGES * play_row + play_stage];
         uint64_t ratchet_time = seq_us_per_beat / ratchets;
+        
 
         // check if ratchet event should happen
         if(current_time >= seq_join_last_ratchet + ratchet_time) {
@@ -168,7 +252,7 @@ void sequencer_tick(void) {
         // if note should be played, play it
         if(play_note) {
             printf("row [%d] stage [%d], start now: %d\n", play_row, play_stage, seq_values[play_row * SEQ_STAGES + play_stage]);
-        }
+        }*/
     } 
     // sequencer running in parallel mode
     else {
@@ -294,6 +378,9 @@ void sequencer_set_duration(uint8_t index, uint8_t value) {
 -> index: integer value representing the desired stage
 -> value: integer value specifying how often the note will be triggered */
 void sequencer_set_ratchets(uint8_t index, uint8_t value) {
+    printf("set ratchet %d -> %d | ", index, value);
+    printf(" %d", seq_ratchets[index]);
+    printf("\n");
     seq_ratchets[index] = value;
 }
 

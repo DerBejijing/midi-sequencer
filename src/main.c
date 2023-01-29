@@ -40,6 +40,10 @@ int main() {
     uint16_t bpm_choices[25] = {0};
     for(uint8_t i = 0; i < 25; ++i) bpm_choices[i] = 60 + 20 * i;
 
+    // create a list of all available BPM choices with fine tuning
+    uint16_t bpm_choices_list[25][25] = {0};
+    for(uint8_t x = 0; x < 25; ++x) for(uint8_t y = 0; y < 25; ++y) bpm_choices_list[x][y] = (x * 60) + (y * 5);
+
 
     while(1) {
         uint64_t current_time = time_us_64();

@@ -417,7 +417,7 @@ void seq_gpio_tick_settings(void) {
 }
 
 
-/* register allback
+/* register callback
 -> is_interface: boolean value, does the button belong to the interface?
 -> button: integer value representing the button id
 -> momentary: boolean value, push or latching button?
@@ -440,6 +440,8 @@ void seq_gpio_process_callback(uint8_t is_interface, uint8_t button) {
     uint8_t index = is_interface * (SETTINGS_BUTTONS - 0) + button;
 
     sg_button_callback[index].state =! sg_button_callback[index].state;
+
+    printf("callback if:%d bu:%d cb:%p\n", is_interface, button, sg_button_callback[index].callback);
 
     if(sg_button_callback[index].momentary) {
         if(sg_button_callback[index].state) sg_button_callback[index].callback();
