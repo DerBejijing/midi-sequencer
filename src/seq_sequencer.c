@@ -1,5 +1,8 @@
 #include "../include/seq_sequencer.h"
 
+// 
+uint8_t seq_do_init = 1;
+
 // variables to store data about serial operation
 uint8_t seq_join = 0;                               // sequence joined or not
 uint8_t seq_join_step = 0;                          // current step for joined sequence
@@ -75,16 +78,19 @@ void sequencer_init(void) {
         seq_rows[row].type = 0;
         seq_rows[row].stage = 0;
         seq_rows[row].stages = SEQ_STAGES;
-        //seq_rows[row].active = 0;                         // do not reset this value
         seq_rows[row].render = 1;
         seq_rows[row].last_clock = current_time;
         seq_rows[row].last_ratchet = current_time;
     }
 
-    // reset all values for ratchets and durations
-    for(uint8_t i = 0; i < SEQ_ROWS * SEQ_STAGES; ++i) {
-        seq_ratchets[i] = 1;
-        seq_durations[i] = 1;
+    // things to be done only once
+    if(seq_do_init) {
+        // reset all values for ratchets and durations
+        for(uint8_t i = 0; i < SEQ_ROWS * SEQ_STAGES; ++i) {
+            seq_ratchets[i] = 1;
+            seq_durations[i] = 1;
+        }
+        seq_do_init = 0;
     }
 }
 

@@ -40,9 +40,9 @@ int main() {
     uint16_t bpm_choices[25] = {0};
     for(uint8_t i = 0; i < 25; ++i) bpm_choices[i] = 60 + 20 * i;
 
-    // create a list of all available BPM choices with fine tuning
+    /*// create a list of all available BPM choices with fine tuning
     uint16_t bpm_choices_list[25][25] = {0};
-    for(uint8_t x = 0; x < 25; ++x) for(uint8_t y = 0; y < 25; ++y) bpm_choices_list[x][y] = (x * 60) + (y * 5);
+    for(uint8_t x = 0; x < 25; ++x) for(uint8_t y = 0; y < 25; ++y) bpm_choices_list[x][y] = (x * 60) + (y * 5);*/
 
 
     while(1) {
@@ -51,6 +51,7 @@ int main() {
         // tick all essential modules
         seq_gpio_tick();
         sequencer_tick();
+
 
         // refresh all analog values
         if(current_time > last_refresh_v + REFRESH_VALUES_US) {
@@ -70,6 +71,7 @@ int main() {
                 sequencer_set_stages(row, seq_gpio_read_setting(row));
             }
         }
+
 
         // update seven segment display
         if(current_time > last_refresh_s + REFRESH_SEVEN_SEGMENT_US) {
