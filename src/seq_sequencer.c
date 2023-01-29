@@ -309,9 +309,6 @@ void sequencer_set_duration(uint8_t index, uint8_t value) {
 -> index: integer value representing the desired stage
 -> value: integer value specifying how often the note will be triggered */
 void sequencer_set_ratchets(uint8_t index, uint8_t value) {
-    printf("set ratchet %d -> %d | ", index, value);
-    printf(" %d", seq_ratchets[index]);
-    printf("\n");
     seq_ratchets[index] = value;
 }
 

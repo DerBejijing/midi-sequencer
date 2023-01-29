@@ -20,8 +20,8 @@ void seq_interface_init(void) {
     //seq_gpio_register_callback(1, 6, 0, seq_interface_select_row_toggle_note);
     //seq_gpio_register_callback(1, 7, 0, seq_interface_select_row_down);
 
+    seq_gpio_register_callback(0, 2, 1, seq_interface_change_clear);
     seq_gpio_register_callback(0, 4, 1, seq_interface_change_write);
-    seq_gpio_register_callback(0, 5, 1, seq_interface_change_clear);
 }
 
 
