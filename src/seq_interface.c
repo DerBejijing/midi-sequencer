@@ -20,8 +20,8 @@ void seq_interface_init(void) {
     //seq_gpio_register_callback(1, 6, 0, seq_interface_select_row_toggle_note);
     //seq_gpio_register_callback(1, 7, 0, seq_interface_select_row_down);
 
-    seq_gpio_register_callback(0, 4, 1, seq_interface_change_clear);
-    seq_gpio_register_callback(0, 5, 1, seq_interface_change_write);
+    seq_gpio_register_callback(0, 4, 1, seq_interface_change_write);
+    seq_gpio_register_callback(0, 5, 1, seq_interface_change_clear);
 }
 
 
@@ -36,22 +36,23 @@ void seq_interface_change_write(void) {
     if(seq_ui_mode == 0) {
         sequencer_set_ratchets(seq_ui_stage, seq_ui_value);
         seq_seven_segment_set(seq_ui_value);
-        printf("ratchet stage %d set %d\n", seq_ui_stage, seq_ui_value);
     }
     if(seq_ui_mode == 1) sequencer_set_duration(seq_ui_stage, seq_ui_value);
 }
 
 
-/* hmm idk what this should have done */
+/* reset all settings to default */
 void seq_interface_change_clear(void) {
-    printf("clear\n");
+    for(uint8_t i = 0; i < SEQ_ROWS * SEQ_STAGES; ++i) {
+        sequencer_set_duration(i, 1);
+        sequencer_set_ratchets(i, 1);
+    }
 }
 
 
 /* edit step ratcheting */
 void seq_interface_mode_ratcheting(void) {
     seq_ui_mode = 0;
-    printf("ratchet\n");
 }
 
 
