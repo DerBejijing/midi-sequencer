@@ -3,6 +3,14 @@
 #define MIDI_NOTE 0
 #define MIDI_VALUE 1
 
+#define MIDI_NOTE_ON 0x90
+#define MIDI_NOTE_OFF 0x80
+
+#define MIDI_VEL_MAX 127
+#define MIDI_VEL_MIN 0
+
+#define MIDI_CABLE 0
+
 
 // 
 uint8_t seq_do_init = 1;
@@ -65,8 +73,11 @@ struct midi_event {
 struct midi_event event_stack[SEQ_ROWS];
 
 
-void sequencer_midi_play(uint8_t channel, uint8_t value, uint8_t type, uint64_t gate);
+void sequencer_midi_issue_note(uint8_t channel, uint8_t value, uint8_t type, uint64_t gate);
 void sequencer_midi_update(void);
+void sequencer_midi_clear(void);
+void sequencer_midi_note_on(uint8_t channel, uint8_t note);
+void sequencer_midi_note_off(uint8_t channel, uint8_t note);
 
 
 /* initialize the sequencer */
@@ -350,6 +361,9 @@ void sequencer_toggle_joined(void) {
     seq_join =! seq_join;
     seq_running = 0;
     
+    // clear midi
+    sequencer_midi_clear();
+
     // set indicator LED
     seq_gpio_indicator_joined(seq_join);
     
@@ -362,6 +376,9 @@ void sequencer_toggle_joined(void) {
 void sequencer_toggle_running(void) {
     seq_running =! seq_running;
     
+    // clear midi
+    sequencer_midi_clear();
+
     // if now running, reset it before
     if(seq_running) {
         sequencer_init();
@@ -371,7 +388,7 @@ void sequencer_toggle_running(void) {
 
 
 /* play a midi value */
-void sequencer_midi_play(uint8_t channel, uint8_t value, uint8_t type, uint64_t gate) {
+void sequencer_midi_issue_note(uint8_t channel, uint8_t value, uint8_t type, uint64_t gate) {
     /*struct midi_event {
     uint8_t type;               // note or control change
     uint8_t value;              // value
@@ -396,14 +413,56 @@ void sequencer_midi_play(uint8_t channel, uint8_t value, uint8_t type, uint64_t 
 
     if(type == MIDI_NOTE) {
         // play midi note
+        sequencer_midi_note_on(value, channel);
         return;
     }
 
     // issue a control change
+
+    midi_current->active = 0;
 }
 
 
 /* update the midi stack, check play time of values */
 void sequencer_midi_update(void) {
+    uint8_t packet[4];
+    while(tud_midi_available()) tud_midi_packet_read(packet);
 
+    uint8_t current_time = time_us_64();
+
+    for(uint8_t i = 0; i < SEQ_ROWS; ++i) {
+        struct midi_event* midi_current = &event_stack[i];
+
+        if(midi_current->active) {
+            if(current_time >= midi_current->stop) {
+                midi_current->active = 0;
+                sequencer_midi_note_off(midi_current->channel, midi_current->value);
+            }
+        }
+    }
+}
+
+
+/* clean up all midi stuff */
+void sequencer_midi_clear(void) {
+    for(uint8_t i = 0; i < SEQ_ROWS; ++i) {
+        if(event_stack[i].active) {
+            sequencer_midi_note_off(event_stack[i].channel, event_stack[i].value);
+            event_stack[i].active = 0;
+        }
+    }
+}
+
+
+/* play note */
+void sequencer_midi_note_on(uint8_t note, uint8_t channel) {
+    uint8_t note_on[3] = {MIDI_NOTE_ON | channel, note, MIDI_VEL_MAX};
+    tud_midi_stream_write(MIDI_CABLE, note_on, 3);
+}
+
+
+/* stop note */
+void sequencer_midi_note_off(uint8_t note, uint8_t channel) {
+    uint8_t note_off[3] = {MIDI_NOTE_OFF | channel, note, MIDI_VEL_MIN};
+    tud_midi_stream_write(MIDI_CABLE, note_off, 3);
 }
