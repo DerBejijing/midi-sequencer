@@ -1,5 +1,9 @@
 #include "../include/seq_sequencer.h"
 
+#define MIDI_NOTE 0
+#define MIDI_VALUE 1
+
+
 // 
 uint8_t seq_do_init = 1;
 
@@ -60,6 +64,9 @@ struct midi_event {
 // events will be added and removed dynamically
 struct midi_event event_stack[SEQ_ROWS];
 
+
+void sequencer_midi_play(uint8_t channel, uint8_t value, uint8_t type, uint64_t gate);
+void sequencer_midi_update(void);
 
 
 /* initialize the sequencer */
@@ -360,4 +367,43 @@ void sequencer_toggle_running(void) {
         sequencer_init();
         sequencer_process_initial();
     }
+}
+
+
+/* play a midi value */
+void sequencer_midi_play(uint8_t channel, uint8_t value, uint8_t type, uint64_t gate) {
+    /*struct midi_event {
+    uint8_t type;               // note or control change
+    uint8_t value;              // value
+    uint8_t channel;            // channel
+    uint8_t active;             // event currently running
+    uint64_t start;             // start time
+    uint64_t stop;              // stop time
+    };*/
+
+    uint64_t current_time = time_us_64();
+
+    struct midi_event* midi_current = &event_stack[channel];
+
+    // check if there is still an event, because the speed has been changed, if so cancel it
+
+    midi_current->channel = channel;
+    midi_current->value = value;
+    midi_current->type = type;
+    midi_current->start = current_time;
+    midi_current->stop = current_time + gate;
+    midi_current->active = 1;
+
+    if(type == MIDI_NOTE) {
+        // play midi note
+        return;
+    }
+
+    // issue a control change
+}
+
+
+/* update the midi stack, check play time of values */
+void sequencer_midi_update(void) {
+
 }

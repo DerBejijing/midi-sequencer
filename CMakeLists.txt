@@ -25,6 +25,7 @@ add_executable(midi-sequencer
         src/seq_interface.c
         src/seq_sequencer.c
         src/seq_seven_segment.c
+        src/usb_descriptors.c
         )
 
 pico_set_program_name(midi-sequencer "midi-sequencer")
@@ -40,6 +41,8 @@ target_link_libraries(midi-sequencer pico_stdlib)
 target_link_libraries(midi-sequencer
         hardware_timer
         hardware_adc
+        tinyusb_device
+        tinyusb_board
         )
 
 pico_add_extra_outputs(midi-sequencer)
