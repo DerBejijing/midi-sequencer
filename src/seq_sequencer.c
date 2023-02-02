@@ -12,7 +12,7 @@
 #define MIDI_CABLE 0
 
 
-// note offest
+// note offset
 uint8_t seq_offset = 60;
 
 // first initialize
@@ -202,7 +202,6 @@ void sequencer_tick(void) {
 
         // if note should be played, play it
         if(play_note) {
-            //printf("row [%d] stage [%d], start now: %d\n", play_row, play_stage, seq_values[play_row * SEQ_STAGES + play_stage]);
             sequencer_midi_issue_note(0, seq_values[play_row * SEQ_STAGES + play_stage], MIDI_NOTE, seq_us_per_beat / 2);
         }
     } 
@@ -264,7 +263,6 @@ void sequencer_tick(void) {
 
             // if note should be played, play it
             if(play_note) {
-                //printf("row [%d] stage [%d], start now: %d\n", row, current_row->stage, seq_values[row * SEQ_STAGES + current_row->stage]);
                 sequencer_midi_issue_note(row, seq_values[row * SEQ_STAGES + current_row->stage], MIDI_NOTE, seq_us_per_beat / 2);
             }
         }
@@ -343,7 +341,6 @@ void sequencer_process_initial(void) {
     if(seq_join) {
         for(uint8_t row = 0; row < SEQ_ROWS; ++row) {
             if(seq_rows[row].active) {
-                //printf("row [%d] stage [%d], start now: %d\n", row, 0, seq_values[row * SEQ_STAGES]);
                 sequencer_midi_issue_note(row, seq_values[row * SEQ_STAGES], MIDI_NOTE, seq_us_per_beat / 2);
                 return;
             }
@@ -413,7 +410,6 @@ void sequencer_midi_issue_note(uint8_t channel, uint8_t value, uint8_t type, uin
     midi_current->active = 1;
 
     if(type == MIDI_NOTE) {
-        // play midi note
         sequencer_midi_note_on(channel, value);
         return;
     }
@@ -435,7 +431,6 @@ void sequencer_midi_update(void) {
         struct midi_event* midi_current = &event_stack[i];
 
         if(midi_current->active) {
-            //printf("row %d now %lld, stop %lld\n", i, current_time, midi_current->stop);
             if(current_time >= midi_current->stop) {
                 midi_current->active = 0;
                 sequencer_midi_note_off(midi_current->channel, midi_current->value);
@@ -458,7 +453,6 @@ void sequencer_midi_clear(void) {
 
 /* play note */
 void sequencer_midi_note_on(uint8_t channel, uint8_t note) {
-    //printf("note %d on\n", note);
     uint8_t note_on[3] = {MIDI_NOTE_ON | channel, seq_offset + note, MIDI_VEL_MAX};
     tud_midi_stream_write(MIDI_CABLE, note_on, 3);
 }
@@ -466,7 +460,6 @@ void sequencer_midi_note_on(uint8_t channel, uint8_t note) {
 
 /* stop note */
 void sequencer_midi_note_off(uint8_t channel, uint8_t note) {
-    //printf("note %d off\n", note);
     uint8_t note_off[3] = {MIDI_NOTE_OFF | channel, seq_offset + note, MIDI_VEL_MIN};
     tud_midi_stream_write(MIDI_CABLE, note_off, 3);
 }
