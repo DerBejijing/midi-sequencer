@@ -11,6 +11,7 @@
 
 #include "seq_globals.h"
 #include "seq_gpio.h"
+#include "seq_seven_segment.h"
 
 void sequencer_init(void);
 void sequencer_tick(void);

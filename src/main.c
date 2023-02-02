@@ -20,7 +20,7 @@ int main() {
     board_init();
     tusb_init();
 
-    sleep_ms(2000);
+    //sleep_ms(5000);
 
     // initialize all modules
     seq_gpio_init();
@@ -35,8 +35,6 @@ int main() {
 
     // set illumination time of 7 segment display
     seq_seven_segment_time(500000);
-
-    sleep_ms(2000);
 
     // store time of last refresh event
     uint64_t last_refresh_v = 0;
