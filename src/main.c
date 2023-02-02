@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "pico/binary_info.h"
 #include "hardware/timer.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
@@ -10,9 +11,14 @@
 #include "../include/seq_sequencer.h"
 #include "../include/seq_seven_segment.h"
 
+#include "bsp/board.h"
+#include "tusb.h"
 
 int main() {
     stdio_init_all();
+
+    board_init();
+    tusb_init();
 
     sleep_ms(2000);
 
@@ -47,6 +53,8 @@ int main() {
 
     while(1) {
         uint64_t current_time = time_us_64();
+
+        tud_task();
 
         // tick all essential modules
         seq_gpio_tick();

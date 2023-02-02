@@ -14,6 +14,8 @@ include(pico_sdk_import.cmake)
 
 project(midi-sequencer C CXX ASM)
 
+#add_compile_options(-CFG_TUSB_CONFIG_FILE=include/tusb_config.h)
+
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
@@ -33,6 +35,12 @@ pico_set_program_version(midi-sequencer "0.1")
 
 pico_enable_stdio_uart(midi-sequencer 0)
 pico_enable_stdio_usb(midi-sequencer 1)
+
+# for midi:
+#pico_enable_stdio_usb(pico-example-midi 0)
+#pico_enable_stdio_uart(pico-example-midi 1)
+
+target_include_directories(midi-sequencer PRIVATE "include/")
 
 # Add the standard library to the build
 target_link_libraries(midi-sequencer pico_stdlib)

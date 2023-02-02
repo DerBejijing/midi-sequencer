@@ -2,9 +2,12 @@
 #define SEQ_SEQUENCER_H
 
 #include <stdio.h>
-#include <pico/stdlib.h>
-
+#include "pico/stdlib.h"
+#include "pico/binary_info.h"
 #include "hardware/timer.h"
+
+#include "bsp/board.h"
+#include "tusb.h"
 
 #include "seq_globals.h"
 #include "seq_gpio.h"

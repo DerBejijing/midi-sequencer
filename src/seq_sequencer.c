@@ -403,6 +403,7 @@ void sequencer_midi_issue_note(uint8_t channel, uint8_t value, uint8_t type, uin
     struct midi_event* midi_current = &event_stack[channel];
 
     // check if there is still an event, because the speed has been changed, if so cancel it
+    if(midi_current->active) sequencer_midi_note_off(midi_current->channel, midi_current->value);
 
     midi_current->channel = channel;
     midi_current->value = value;

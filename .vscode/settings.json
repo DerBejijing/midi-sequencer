@@ -17,6 +17,7 @@
       "stdio.h": "c",
       "seq_globals.h": "c",
       "adc.h": "c",
-      "seq_interface.h": "c"
+      "seq_interface.h": "c",
+      "tusb.h": "c"
     },
 }
