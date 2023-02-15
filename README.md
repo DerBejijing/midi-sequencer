@@ -3,9 +3,9 @@ midi sequencer firmware for raspberry pico (moog 960-sequencer inspired)
 Inspired by moog, but turned out to look more like the MAQ16 lul  
 
 ## about  
-This is a midi step sequencer inspired by the 960 made by moog in the 70s.  
-Since getting to know it, I have always loved the moog IIIp modular synthesizer, which is why I decided to build my own version of the sequencer complement B.  
-The cabinet holds two of those modules plus an additional "half-height" (actually about 60%) row, like the original one.  
+This is a midi step sequencer inspired by the 960 made by moog in the 70s.
+Since getting to know it, I have always loved the moog IIIp modular synthesizer, which is why I decided to build my own version of the sequencer complement B.
+The cabinet holds two of those modules plus an additional "half-height" (actually about 60%) row, like the original one.
 During the building process, I diverged from my original design over and over again, and in the end, I even had to borrow some parts from the other sequencer in the cabinet.  
 
 ## features  
